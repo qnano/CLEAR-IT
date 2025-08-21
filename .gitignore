@@ -1,7 +1,6 @@
 __pycache__
 debug
 *.code-workspace
-experiments
 clearit.egg-info
 clearit/clearit.egg-info
 maps/maps.egg-info
