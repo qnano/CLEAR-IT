@@ -1,0 +1,14 @@
+__pycache__
+debug
+*.code-workspace
+experiments
+clearit.egg-info
+clearit/clearit.egg-info
+maps/maps.egg-info
+maps.egg-info
+/config.yaml
+experiments2
+experiments3
+.vscode
+clearit/_*
+maps

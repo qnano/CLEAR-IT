@@ -1,0 +1,39 @@
+dataset_name:      null
+annotation_name:   null
+data_index_list:   null
+
+dataset_size:      null
+cache_key:         null
+
+batch_size:        256
+img_size:          64
+num_channels:      1
+
+encoder_name:      resnet18
+encoder_features:  512
+
+mlp_layers:        [512, 512, 512]
+mlp_features:      128
+
+epochs:            5
+epochs_trained:    0
+
+tau:               0.05
+optimizer:         LARS
+learning_rate:     null
+
+transforms:
+  rotate:         1
+  flip:           1
+  translate:      0
+  zoomfactor_min: 1.0
+  zoomfactor_max: 1.0
+  gaussian_blur:  0
+  brightness:     0
+  contrast:       0
+  saturation:     0
+  hue:            0
+
+lazy_crops:        false
+init_time:         null
+status:            0

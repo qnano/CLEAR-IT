@@ -1,0 +1,10 @@
+# config_template.yaml
+# Create a copy of this file and name it `config.yaml` to point to custom paths
+paths:
+  # Absolute or relative path to the unpacked CLEAR-IT-Data folder
+  data_root: /path/to/data/repository/CLEAR-IT
+#  datasets_dir: /path/to/data/repository/CLEAR-IT/datasets
+#  raw_datasets_dir: /path/to/data/repository/CLEAR-IT/raw_datasets
+#  models_dir: /path/to/data/repository/CLEAR-IT/models
+#  outputs_dir: /path/to/data/repository/CLEAR-IT/outputs
+#  experiments_dir: /path/to/data/repository/CLEAR-IT/experiments # experiments are located within the CLEAR-IT GitHub repo!

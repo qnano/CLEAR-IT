@@ -1,0 +1,21 @@
+# Jupyter stack
+jupyterlab
+ipywidgets
+
+# I/O & formats
+tifffile
+imagecodecs
+openpyxl
+fcsparser
+
+# ML / utils
+kornia
+mlxtend
+torchlars
+seaborn
+
+# Explainability & survival analysis
+shap
+tensorflow
+autograd-gamma==0.5.0
+lifelines
