@@ -25,7 +25,7 @@ For pre-trained models, embeddings, and model predictions, see our [data reposit
 
 ### Option B — Docker
 
-A ready-to-build Dockerfile is provided as `clearit.Dockerfile`.
+A single, ready-to-build Dockerfile is provided as `clearit.Dockerfile`. The image **installs CLEAR-IT** and, on first run, **auto-creates a `config.yaml`** if you mount your CLEAR-IT-Data folder at `/data`.
 
 Build the image:
 
@@ -33,22 +33,26 @@ Build the image:
 docker build -f clearit.Dockerfile -t clearit:latest .
 ```
 
-Run a container (mount your repo and data; add `--gpus all` if you have NVIDIA GPUs configured):
+Run (starts JupyterLab per the image entrypoint). Replace the path with your local CLEAR-IT-Data folder. Add `--gpus all` if you have NVIDIA GPUs set up:
 
 ```bash
-docker run -it --rm \
-  -v $(pwd):/workspace/CLEAR-IT \
-  -v /path/to/data:/data \
-  clearit:latest bash
+docker run --rm -p 8888:8888 \
+  -v /abs/path/to/CLEAR-IT-Data:/data \
+  clearit:latest
 ```
 
-Inside the container, install in editable mode if needed:
+What happens on first run?
 
-```bash
-cd /workspace/CLEAR-IT && pip install -e .
-```
+* The container detects the `/data` mount and writes `/workspace/config.yaml` with all paths pointing to `/data/...` and `experiments_dir` pointing to the experiments bundled in the container install.
+* You can override the file later if you want custom locations.
 
-> **Tip:** Whether you install locally or via Docker, make sure to create a `config.yaml` (see below). The scripts look for this file to resolve all paths.
+> Need a shell instead of Jupyter? Use this command:
+>
+> ```bash
+> docker run --rm -it --entrypoint bash \
+>   -v /abs/path/to/CLEAR-IT-Data:/data \
+>   clearit:latest
+> ```
 
 ## Usage
 
@@ -56,14 +60,14 @@ The CLEAR-IT library exposes three driver scripts to (1) pre-train encoders, (2)
 
 ### 1) Configure paths
 
-Copy the template and edit paths to where your data lives (see the [Repository structure and `config.yaml`](#repository-structure-and-configyaml) section for details on the directory layout):
+**Using Docker?** You can skip this step on first run — the container writes `/workspace/config.yaml` automatically when `/data` is mounted (see Installation → Docker). For local installs, copy and edit the template:
 
 ```bash
 cp config_template.yaml config.yaml
 # then open config.yaml and update the paths under `paths:`
 ```
 
-The scripts and notebooks will look for a `config.yaml` in your working directory (typically the repo root). The locations set here determine where datasets are read from and where models, embeddings, and outputs are written.
+The scripts and notebooks will look for a `config.yaml` in your working directory (typically the repo root). The locations set here determine where datasets are read from and where models and outputs are written.
 
 ### 2) Pick a recipe and run
 
