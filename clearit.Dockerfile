@@ -16,9 +16,10 @@ RUN pip install --no-cache-dir -U "pip<24.3" "setuptools<70" "wheel<0.45" \
  && pip install --no-cache-dir -r /tmp/requirements.txt
 
 # --- Install CLEAR-IT into the image ---
-# Copy only what is needed to install the package
 COPY setup.py /opt/clearit/src/setup.py
 COPY clearit /opt/clearit/src/clearit
+COPY scripts /opt/clearit/src/scripts
+COPY notebooks /opt/clearit/src/notebooks
 
 # Install the CLEAR-IT library (non-editable install)
 RUN pip install --no-cache-dir /opt/clearit/src
