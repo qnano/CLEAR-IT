@@ -67,13 +67,18 @@ The scripts and notebooks will look for a `config.yaml` in your working director
 
 ### 2) Pick a recipe and run
 
-Each recipe can contain multiple encoders/heads to be trained or parameters to use for linear evaluation. Example commands:
+Each recipe can contain multiple encoders/heads to be trained or parameters to use for linear evaluation. Below are three examples.
 
+Pre-training all encoders for investigating changes of the pre-training batch size and NT-Xent temperature on the TNBC1-MxIF8 dataset:
 ```bash
 python -m clearit.scripts.run_pretrain --recipe ./experiments/01_hyperopt/tnbc1-mxif8/round01/01_pretrain/01_batch-tau.yaml
-
+```
+Training linear classification heads on top of those pre-trained encoders:
+```bash
 python -m clearit.scripts.run_train_heads --recipe ./experiments/01_hyperopt/tnbc1-mxif8/round01/02_classifier/01_batch-tau.yaml
-
+```
+Using the classification heads to perform linear evaluation of those pre-trained encoders:
+```bash
 python -m clearit.scripts.run_inference_pipeline --recipe ./experiments/01_hyperopt/tnbc1-mxif8/round01/03_linear-eval/01_batch-tau.yaml
 ```
 
