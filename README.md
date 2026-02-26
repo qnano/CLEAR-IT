@@ -2,28 +2,16 @@
 
 This is the repository for [CLEAR-IT: Contrastive Learning to Capture the Immune Composition of Tumor Microenvironments](https://doi.org/10.1101/2024.08.20.608738).
 
-For pre-trained models, embeddings, and model predictions, see our [data repository](https://data.4tu.nl/my/datasets/ebc792ad-4767-4aef-b8ff-ae653e901e3f/10.4121/126d8103-6de5-4493-a48e-5d529fef471e) (not published yet)
+For pre-trained models, embeddings, and model predictions, see our supplementary data repository DOI: [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f) (pending publication).
+
+## Runtime environment
+
+CLEAR-IT is actively maintained and tested in the provided Docker environment (`clearit.Dockerfile`).
+Local (non-Docker) installation is available for advanced users, but Docker is the primary tested path.
 
 ## Installation
 
-### Option A — Local install (recommended for development)
-
-1. Clone the repository and (optionally) create a fresh Python environment.
-
-   ```bash
-   git clone https://github.com/qnano/CLEAR-IT.git
-   cd CLEAR-IT
-   # (optional) create & activate a virtual environment
-   python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
-   ```
-2. Install dependencies and the package.
-
-   ```bash
-   pip install -r requirements.txt
-   pip install -e .
-   ```
-
-### Option B — Docker
+### Option A — Docker (primary tested path)
 
 A single, ready-to-build Dockerfile is provided as `clearit.Dockerfile`. The image **installs CLEAR-IT** and, on first run, **auto-creates a `config.yaml`** if you mount your CLEAR-IT-Data folder at `/data`.
 
@@ -54,6 +42,23 @@ What happens on first run?
 >   clearit:latest
 > ```
 
+### Option B — Local install (advanced users)
+
+1. Clone the repository and (optionally) create a fresh Python environment.
+
+   ```bash
+   git clone https://github.com/qnano/CLEAR-IT.git
+   cd CLEAR-IT
+   # (optional) create & activate a virtual environment
+   python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
+   ```
+2. Install dependencies and the package.
+
+   ```bash
+   pip install -r requirements.txt
+   pip install -e .
+   ```
+
 ## Usage
 
 The CLEAR-IT library exposes three driver scripts to (1) pre-train encoders, (2) train classification heads, and (3) perform linear evaluation. Each script is pointed to a YAML **recipe** describing one or more experiments. Recipe files live under the `experiments/` folder in this repository.
@@ -67,7 +72,8 @@ cp config_template.yaml config.yaml
 # then open config.yaml and update the paths under `paths:`
 ```
 
-The scripts and notebooks will look for a `config.yaml` in your working directory (typically the repo root). The locations set here determine where datasets are read from and where models and outputs are written.
+The scripts and notebooks load `config.yaml` from the repository root. In most cases, setting `paths.data_root` is enough, because the remaining paths default to subdirectories under `data_root`.
+If your experiments live in a different location than `data_root/experiments` (for example, using the GitHub repository's `experiments/` directory), set `paths.experiments_dir` explicitly.
 
 ### 2) Pick a recipe and run
 
@@ -96,7 +102,7 @@ python -m clearit.scripts.run_inference_pipeline --recipe ./experiments/01_hyper
 
 If you want to train the models yourself and are starting from raw sources, use the scripts in `scripts/` to convert external datasets into the unified format expected by CLEAR-IT. These scripts read from `raw_datasets` and write to `datasets` as configured in `config.yaml`.
 
-We recommend downloading the prepared data from our [data repository](https://data.4tu.nl/my/datasets/ebc792ad-4767-4aef-b8ff-ae653e901e3f/10.4121/126d8103-6de5-4493-a48e-5d529fef471e), which contains the folder structure and instructions on how to obtain the raw datasets for conversion..
+We recommend downloading the prepared data from our supplementary data repository DOI [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f), which contains the folder structure and instructions on how to obtain the raw datasets for conversion.
 
 ## Repository structure and `config.yaml`
 
@@ -111,10 +117,10 @@ This repository's structure is as follows:
 ├── notebooks              # Jupyter Notebooks for plotting
 ├── requirements.txt       # requirements.txt for custom environments
 ├── scripts                # Scripts for converting external datasets used in the study to a unified format
-└── setup.py               # setup.py for a local install of clearit
+└── setup.py               # setup.py for local installs of clearit and maps (MAPS benchmark dependency)
 ```
 
-We recommend placing the contents of the [data repository](https://data.4tu.nl/my/datasets/ebc792ad-4767-4aef-b8ff-ae653e901e3f/10.4121/126d8103-6de5-4493-a48e-5d529fef471e) in this directory (or somewhere else on fast storage), extending the structure as follows:
+We recommend placing the contents of supplementary data repository DOI [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f) in this directory (or somewhere else on fast storage), extending the structure as follows:
 
 ```
 ├── datasets               # Location of the converted datasets, ready to be used by CLEAR-IT
@@ -131,17 +137,17 @@ The `config_template.yaml` file contains a template for a `config.yaml` file, wh
 # Create a copy of this file and name it `config.yaml` to point to custom paths
 paths:
   # Absolute or relative path to the unpacked CLEAR-IT-Data directory
-  data_root: /path/to/data/repository/CLEAR-IT                     # Corresponds to the GitHub repository's root directory
-  datasets_dir: /path/to/data/repository/CLEAR-IT/datasets         # The datasets directory from the data repository
-  raw_datasets_dir: /path/to/data/repository/CLEAR-IT/raw_datasets # The raw_datasets directory from the data repository
-  models_dir: /path/to/data/repository/CLEAR-IT/models             # The models directory from the data repository
-  outputs_dir: /path/to/data/repository/CLEAR-IT/outputs           # The outputs directory from the data repository
-  experiments_dir: /path/to/data/repository/CLEAR-IT/experiments   # The experiments directory from the GitHub repository
+  data_root: /path/to/data/repository/CLEAR-IT
+#  datasets_dir: /path/to/data/repository/CLEAR-IT/datasets
+#  raw_datasets_dir: /path/to/data/repository/CLEAR-IT/raw_datasets
+#  models_dir: /path/to/data/repository/CLEAR-IT/models
+#  outputs_dir: /path/to/data/repository/CLEAR-IT/outputs
+#  experiments_dir: /path/to/repo/CLEAR-IT/experiments             # Set explicitly when experiments are not under data_root
 ```
 
 By modifying the `config.yaml`, you are free to choose where you place individual directories (if space is a concern). If you want to train models, we recommend putting the `datasets` directory on fast storage (for example an SSD).
 
 ## Troubleshooting
 
-* **`FileNotFoundError: config.yaml`** — ensure you copied `config_template.yaml` to `config.yaml` and that you run commands from the repository root (or point your working directory accordingly).
+* **`FileNotFoundError: config.yaml`** — ensure you copied `config_template.yaml` to `config.yaml` at the repository root.
 * **Docker can’t see your data** — double-check your `-v /host/path:/container/path` volume mounts and that `config.yaml` uses the *container* paths when running inside Docker.
