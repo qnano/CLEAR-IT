@@ -14,27 +14,6 @@ from clearit.data.classification.manager import ClassificationDataManager
 from clearit.models.resnet import ResNetEncoder
 import yaml
 
-# def load_encoder_only(
-#     encoder_id: str,
-#     device: Optional[torch.device] = None
-# ) -> ResNetEncoder:
-#     """
-#     Load only the pretrained ResNetEncoder (no head) for inference/embeddings.
-#     """
-#     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-
-#     enc_dir = MODELS_DIR / 'encoders' / encoder_id
-#     cfg = yaml.safe_load((enc_dir / 'conf_enc.yaml').read_text())
-#     encoder = ResNetEncoder(
-#         encoder_name     = cfg['encoder_name'],
-#         encoder_features = cfg['encoder_features'],
-#         mlp_layers       = cfg['mlp_layers'],
-#         mlp_features     = cfg['mlp_features'],
-#         in_channels      = cfg.get('in_channels', 1),
-#     )
-#     ckpt = torch.load(enc_dir / 'enc.pt', map_location='cpu')
-#     encoder.load_state_dict(ckpt, strict=False)
-#     return encoder.to(device).eval()
 
 def load_encoder_only(
     encoder_id: str,
@@ -64,31 +43,6 @@ def load_encoder_only(
 
     return encoder.to(device).eval()
 
-
-# def _build_loader_from_df(
-#     df_samples: pd.DataFrame,
-#     dataset_name: str,
-#     annotation_name: str,
-#     config: dict,
-#     device: torch.device,
-#     num_workers: int = 0
-# ):
-#     """
-#     Internal: build a single‐split (test_size=0) dataloader from a df.
-#     Uses ClassificationDataManager, merges crop_df internally.
-#     """
-#     df_work = df_samples.reset_index(drop=True)
-#     loader, _ = ClassificationDataManager.get_dataloader(
-#         dataset_name = f"{dataset_name}",
-#         df_samples   = df_work,
-#         config       = config,
-#         device       = device,
-#         num_workers  = num_workers,
-#         test_size    = 0,
-#         random_state = None,
-#         verbose      = False
-#     )
-#     return loader
 
 def _build_loader_from_df(
     df_samples,
@@ -132,65 +86,6 @@ def _build_loader_from_df(
         persistent_workers = (num_workers > 0),
     )
     return loader
-
-# def get_classification_predictions(
-#     df_samples: pd.DataFrame,
-#     dataset_name: str,
-#     annotation_name: str,
-#     encoder_id: str,
-#     head_id:    str,
-#     batch_size: int = 64,
-#     num_workers: int = 0,
-#     device: Optional[torch.device] = None
-# ) -> pd.DataFrame:
-#     """
-#     Run a trained encoder+head on all rows in df_samples and return a DataFrame
-#     with the original df columns plus:
-#       - one column per sigmoid_{i} prediction
-#       - one column per target_{i}
-#       - cell_x, cell_y (as ints)
-#     """
-#     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-#     # load composite model
-#     model = load_encoder_head(encoder_id, head_id, device=device)
-
-#     # build loader
-#     cfg = dict(
-#         batch_size  = batch_size,
-#         img_size    = int(df_samples.attrs.get('img_size', 64)),
-#         label_mode  = df_samples.attrs.get('label_mode', 'multilabel'),
-#         num_classes = df_samples.attrs.get('num_classes', 1),
-#     )
-#     loader = _build_loader_from_df(df_samples, dataset_name, annotation_name, cfg, device, num_workers)
-
-#     records = []
-#     with torch.no_grad():
-#         for imgs, labs, locs, fnames in loader:
-#             imgs = imgs.to(device)
-#             out  = model(imgs)
-#             if cfg['label_mode']=='multilabel':
-#                 preds = torch.sigmoid(out).cpu().numpy()
-#             else:
-#                 preds = torch.softmax(out,1).cpu().numpy()
-#             labs = labs.numpy()
-#             xs, ys = locs
-
-#             for b in range(imgs.size(0)):
-#                 row = dict(
-#                     fname    = Path(fnames[b]).name,
-#                     cell_x   = int(xs[b]),
-#                     cell_y   = int(ys[b]),
-#                 )
-#                 for i in range(cfg['num_classes']):
-#                     if cfg['label_mode']=='multilabel':
-#                         row[f"sigmoid_{i}"] = float(preds[b,i])
-#                         row[f"target_{i}"]  = int(labs[b,i])
-#                     else:
-#                         row['prediction'] = int(preds[b].argmax())
-#                         row['target']     = int(labs[b])
-#                 records.append(row)
-
-#     return pd.DataFrame.from_records(records)
 
 def get_classification_predictions(
     df_samples,
@@ -248,98 +143,6 @@ def get_classification_predictions(
 
     return pd.DataFrame(rows)
 
-# def get_embeddings(
-#     df_samples: pd.DataFrame,
-#     dataset_name: str,
-#     annotation_name: str,
-#     encoder_id: str,
-#     batch_size: int = 64,
-#     num_workers: int = 0,
-#     device: Optional[torch.device] = None,
-# ) -> pd.DataFrame:
-#     """
-#     Run only the encoder over each channel‐patch in df_samples and return a DataFrame
-#     with columns:
-#       - fname, cell_x, cell_y
-#       - embedding: flattened list of length C*F
-#     """
-#     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-#     encoder = load_encoder_only(encoder_id, device=device)
-
-#     # reuse classification dataloader to get (N,C,H,W)
-#     cfg = dict(
-#         batch_size  = batch_size,
-#         img_size    = int(df_samples.attrs.get('img_size', 64)),
-#         label_mode  = df_samples.attrs.get('label_mode', 'multilabel'),
-#         num_classes = df_samples.attrs.get('num_channels', 1),
-#     )
-#     loader = _build_loader_from_df(df_samples, dataset_name, annotation_name, cfg, device, num_workers)
-
-#     records: List[dict] = []
-#     with torch.no_grad():
-#         for imgs, *_ in loader:
-#             # imgs: [B, C, H, W]
-#             B,C,H,W = imgs.shape
-#             x = imgs.view(B*C,1,H,W).to(device)
-#             x = x.repeat(1,3,1,1)               # fake-RGB
-#             feats = encoder(x)                  # [B*C, F]
-#             feats = feats.view(B, C, -1)        # [B, C, F]
-#             concatenated = feats.reshape(B, -1).cpu().numpy()  # [B, C*F]
-
-#             # retrieve locs+fnames from original loader batch attrs
-#             xs, ys = loader.dataset.df.loc[loader.dataset.df.index[:B], ['cell_x','cell_y']].values.T
-#             fnames = loader.dataset.df.loc[loader.dataset.df.index[:B], 'fname'].values
-
-#             for b in range(B):
-#                 records.append({
-#                     'fname':    fnames[b],
-#                     'cell_x':   int(xs[b]),
-#                     'cell_y':   int(ys[b]),
-#                     'embedding': concatenated[b].tolist(),
-#                 })
-
-#     return pd.DataFrame.from_records(records)
-
-# def get_embeddings(
-#     df_samples,
-#     dataset_name: str,
-#     annotation_name: str,
-#     encoder_id: str,
-#     batch_size: int = 128,
-#     num_workers: int = 0,
-#     proj_layers: int = 0,  # optional: how many SimCLR layers to consume
-#     device=None,
-# ):
-#     _ensure_determinism(0)
-#     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-
-#     # deterministic loader
-#     cfg = dict(
-#         batch_size  = batch_size,
-#         img_size    = int(df_samples.attrs.get('img_size', 64)),
-#         label_mode  = df_samples.attrs.get('label_mode', 'multilabel'),
-#         num_classes = df_samples.attrs.get('num_classes', 1),
-#         lazy_crops  = df_samples.attrs.get('lazy_crops', False)
-#     )
-#     loader = _build_loader_from_df(df_samples, dataset_name, annotation_name, cfg, device, num_workers)
-
-#     # load encoder+head, but we’ll only use the encoder
-#     model = load_encoder_head(encoder_id, head_id=None, device=device)  # if you have a separate loader for encoder-only
-#     enc = model.encoder if hasattr(model, "encoder") else model
-#     enc.eval()
-
-#     # collect embeddings
-#     outs = []
-#     with torch.no_grad():
-#         for imgs, *_ in loader:
-#             imgs = imgs.to(device, non_blocking=True)
-#             B, C, H, W = imgs.shape
-#             feats = enc(imgs.view(B*C, 1, H, W).repeat(1, 3, 1, 1))
-#             feats = feats.view(B, C, -1).reshape(B, -1)  # [B, C*F]
-#             outs.append(feats.cpu())
-#     return torch.cat(outs, dim=0)
-
-# clearit/inference/utils.py
 def get_embeddings(
     df_samples,
     dataset_name: str,

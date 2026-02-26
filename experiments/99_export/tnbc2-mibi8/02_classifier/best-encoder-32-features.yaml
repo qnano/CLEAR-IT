@@ -1,0 +1,59 @@
+experiment: 99_export/tnbc2-mibi8/02_classifier/best-encoder-32-features.yaml
+type: train_head
+heads:
+- id: H0610
+  base_encoder: E0194
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/train/N23691.npz
+  dataset_size: 562987
+  batch_size: 64
+  img_size: 64
+  num_channels: 8
+  num_classes: 6
+  label_mode: multilabel
+  freeze_encoder: true
+  proj_layers: 0
+  head_layers: []
+  train_size: 0.8
+  epochs: 500
+  optimizer: ADAM
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  dropout: 0.3
+  pos_weight:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+- id: H0611
+  base_encoder: E0194
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/train/N9118.npz
+  dataset_size: 50813
+  batch_size: 64
+  img_size: 64
+  num_channels: 8
+  num_classes: 6
+  label_mode: multilabel
+  freeze_encoder: true
+  proj_layers: 0
+  head_layers: []
+  train_size: 0.8
+  epochs: 500
+  optimizer: ADAM
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  dropout: 0.3
+  pos_weight:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+output:
+  models_dir: ${paths.models_dir}/heads

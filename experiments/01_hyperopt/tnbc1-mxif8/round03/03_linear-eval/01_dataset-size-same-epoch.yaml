@@ -1,0 +1,32 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round03/03_linear-eval/01_dataset-size-same-epoch.yaml
+type: evaluate
+evaluations:
+- test_id: T0087
+  encoder_id: E0087
+  head_id: H0087
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0088
+  encoder_id: E0088
+  head_id: H0088
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0089
+  encoder_id: E0089
+  head_id: H0089
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0090
+  encoder_id: E0090
+  head_id: H0090
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

@@ -1,0 +1,20 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round03/03_linear-eval/03_dataset-source.yaml
+type: evaluate
+evaluations:
+- test_id: T0098
+  encoder_id: E0098
+  head_id: H0098
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0099
+  encoder_id: E0099
+  head_id: H0099
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

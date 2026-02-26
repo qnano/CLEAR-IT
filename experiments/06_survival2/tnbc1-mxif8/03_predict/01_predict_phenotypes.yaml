@@ -1,0 +1,20 @@
+experiment: 06_survival/tnbc1-mxif8/03_predict/01_predict_phenotypes.yaml
+type: evaluate
+evaluations:
+- test_id: T2001
+  encoder_id: E2001
+  head_id: H2001
+  dataset_name: TNBC3-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_survival01.npz
+- test_id: T2002
+  encoder_id: E2001
+  head_id: H2001
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_survival01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

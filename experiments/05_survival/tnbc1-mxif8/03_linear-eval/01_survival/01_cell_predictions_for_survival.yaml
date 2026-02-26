@@ -1,0 +1,20 @@
+experiment: 05_survival/tnbc1-mxif8/03_linear-eval/01_survival/01_cell_predictions_for_survival.yaml
+type: evaluate
+evaluations:
+- test_id: T1748
+  encoder_id: E1002
+  head_id: H1745
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_survival01.npz
+- test_id: T1749
+  encoder_id: E1002
+  head_id: H1745
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_survival01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

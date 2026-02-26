@@ -1,0 +1,20 @@
+experiment: 99_export/tnbc1-mxif8/03_linear-eval/best-encoder-32-features.yaml
+type: evaluate
+evaluations:
+- test_id: T0656
+  encoder_id: E0192
+  head_id: H0608
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0657
+  encoder_id: E0192
+  head_id: H0609
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

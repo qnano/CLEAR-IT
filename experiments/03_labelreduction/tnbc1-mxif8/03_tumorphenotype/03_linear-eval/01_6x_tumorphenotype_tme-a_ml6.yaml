@@ -1,0 +1,50 @@
+experiment: 03_labelreduction/tnbc1-mxif8/03_tumorphenotype/03_linear-eval/01_6x_tumorphenotype_tme-a_ml6.yaml
+type: evaluate
+evaluations:
+- test_id: T0459
+  encoder_id: E0088
+  head_id: H0411
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0460
+  encoder_id: E0088
+  head_id: H0412
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0461
+  encoder_id: E0088
+  head_id: H0413
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0462
+  encoder_id: E0088
+  head_id: H0414
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0463
+  encoder_id: E0088
+  head_id: H0415
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0464
+  encoder_id: E0088
+  head_id: H0416
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0465
+  encoder_id: E0088
+  head_id: H0417
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

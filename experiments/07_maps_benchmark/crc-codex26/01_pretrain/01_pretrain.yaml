@@ -1,0 +1,26 @@
+experiment: 07_benchmark/crc-codex26/01_pretrain/01_pretrain.yaml
+type: pretrain
+encoders:
+- id: E2005
+  dataset_name: CRC-CODEX26
+  annotation_name: DeepCell_MC14
+  data_index_list: indices/pretrain/N819200.npz
+  dataset_size: 819200
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+output:
+  models_dir: ${paths.models_dir}/encoders

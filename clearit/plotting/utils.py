@@ -1,4 +1,7 @@
 # clearit/models/utils.py
+from pathlib import Path
+from clearit.config import OUTPUTS_DIR
+
 def get_group_color(group_label, shade=0):
     """
     Retrieve a color corresponding to a given class label (or other group label) and shade index.
@@ -47,3 +50,47 @@ def get_group_color(group_label, shade=0):
     }
     shades = colors.get(group_label, [[0, 0, 0], [179, 179, 179]])  # default to gray shades if the group is not in the dictionary
     return [shade_val/255 for shade_val in shades[shade % len(shades)]]  # return the requested shade as a list of values between 0 and 1 (wrapping around if necessary)
+
+def build_single_patient_entries(
+    patient_start: int = 1,
+    patient_end: int = 47,
+    test_start_id: int = 412,
+    dataset_label: str = "TNBC1-MxIF8",
+) -> list:
+    """
+    Build entries for networks trained on individual patients.
+
+    Mapping:
+        P01 -> T0412
+        P02 -> T0413
+        ...
+        P47 -> T0458
+
+    Parameters
+    ----------
+    patient_start, patient_end : int
+        Inclusive range of patient indices (1-based).
+    test_start_id : int
+        Numeric part of the test_dir for patient_start (e.g. 412 for T0412).
+    dataset_label : str
+        Value to put in the 'group' field (e.g. dataset name).
+
+    Returns
+    -------
+    entries : list of dict
+        Each dict has keys: "path", "group", "config".
+    """
+    entries = []
+    for i in range(patient_start, patient_end + 1):
+        patient_id = f"P{i:02d}"                         # e.g. "P01"
+        test_id = test_start_id + (i - patient_start)    # 412, 413, ...
+        test_dir_name = f"T{test_id:04d}"                # e.g. "T0412"
+
+        entry = {
+            "path": Path(OUTPUTS_DIR, "tests", test_dir_name),
+            "group": dataset_label,
+            "config": patient_id,
+        }
+        entries.append(entry)
+
+    return entries

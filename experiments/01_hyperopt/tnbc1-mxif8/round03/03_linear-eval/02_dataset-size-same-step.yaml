@@ -1,0 +1,50 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round03/03_linear-eval/02_dataset-size-same-step.yaml
+type: evaluate
+evaluations:
+- test_id: T0091
+  encoder_id: E0091
+  head_id: H0091
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0092
+  encoder_id: E0092
+  head_id: H0092
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0093
+  encoder_id: E0093
+  head_id: H0093
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0094
+  encoder_id: E0094
+  head_id: H0094
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0095
+  encoder_id: E0095
+  head_id: H0095
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0096
+  encoder_id: E0096
+  head_id: H0096
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0097
+  encoder_id: E0097
+  head_id: H0097
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

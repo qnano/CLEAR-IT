@@ -1,0 +1,38 @@
+experiment: 01_hyperopt/tnbc2-mibi8/round02/03_linear-eval/03_gaussian.yaml
+type: evaluate
+evaluations:
+- test_id: T0138
+  encoder_id: E0138
+  head_id: H0138
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0139
+  encoder_id: E0139
+  head_id: H0139
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0140
+  encoder_id: E0140
+  head_id: H0140
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0141
+  encoder_id: E0141
+  head_id: H0141
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0142
+  encoder_id: E0142
+  head_id: H0142
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

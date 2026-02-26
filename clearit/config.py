@@ -26,6 +26,7 @@ with open(CONFIG_FILE, 'r') as f:
 # Paths configuration
 paths_cfg = cfg.get("paths", {})
 DATA_ROOT = Path(paths_cfg.get("data_root", ".")).expanduser()
+REPO_ROOT = Path(paths_cfg.get("repo_root", ".")).expanduser()
 
 # Allow independent overrides, fallback to DATA_ROOT subpaths
 DATASETS_DIR = Path(paths_cfg.get("datasets_dir", DATA_ROOT / "datasets")).expanduser()
@@ -34,3 +35,4 @@ MODELS_DIR = Path(paths_cfg.get("models_dir", DATA_ROOT / "models")).expanduser(
 RESULTS_DIR = Path(paths_cfg.get("results_dir", DATA_ROOT / "results")).expanduser()
 OUTPUTS_DIR = Path(paths_cfg.get("outputs_dir", DATA_ROOT / "outputs")).expanduser()
 EXPERIMENTS_DIR = Path(paths_cfg.get("experiments_dir", DATA_ROOT / "experiments")).expanduser()
+EMBEDDINGS_DIR = Path(paths_cfg.get("embeddings_dir", DATA_ROOT / "embeddings")).expanduser()

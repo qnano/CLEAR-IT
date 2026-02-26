@@ -1,0 +1,26 @@
+experiment: 04_labelreduction2/tnbc1-mxif8/01_pretrain/01_pretrain.yaml
+type: pretrain
+encoders:
+- id: E1002
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/pretrain/N819200.npz
+  dataset_size: 819200
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+output:
+  models_dir: ${paths.models_dir}/encoders

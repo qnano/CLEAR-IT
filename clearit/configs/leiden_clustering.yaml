@@ -1,0 +1,9 @@
+TNBC1:
+  PCA_DIMS: 64
+  KNN_K: 70
+  LEI_RES: 0.6
+
+TNBC2:
+  PCA_DIMS: 64
+  KNN_K: 85
+  LEI_RES: 1.3

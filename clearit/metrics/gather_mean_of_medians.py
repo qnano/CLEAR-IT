@@ -5,12 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Sequence, Dict, Any, Optional, Callable
-
-
-from typing import List, Dict, Any
-
-
+from typing import Sequence, Dict, Any, Optional, Callable, Tuple, Union
 
 
 def _compute_single_run(
@@ -56,12 +51,39 @@ def _compute_single_run(
     # Return the mean of per-class medians
     return float(np.mean(medians))
 
+def _collect_run_results(
+    tasks: Sequence[Tuple[str, Any, Any]],
+    metric_fn: Callable[[np.ndarray, np.ndarray], float],
+    max_workers: Optional[int] = None
+) -> pd.DataFrame:
+    """
+    Compute run-level mean-of-medians values in parallel for the provided tasks.
+    Returns columns: ['Configuration', 'Group', 'run_mom'].
+    """
+    run_results = []
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_to_meta = {
+            executor.submit(_compute_single_run, path, metric_fn): (cfg, grp)
+            for path, cfg, grp in tasks
+        }
+        for future in as_completed(future_to_meta):
+            cfg, grp = future_to_meta[future]
+            mom = future.result()
+            run_results.append({
+                'Configuration': cfg,
+                'Group':         grp,
+                'run_mom':       mom
+            })
+    return pd.DataFrame(run_results)
+
+
 def gather_region_fast(
     entries: Sequence[Dict[str, Any]],
     *,
     metric_fn: Optional[Callable[[np.ndarray, np.ndarray], float]] = None,
-    max_workers: Optional[int] = None
-) -> pd.DataFrame:
+    max_workers: Optional[int] = None,
+    return_runs: bool = False
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Parallel retrieval of mean-of-medians PR-AUC per run.
 
@@ -79,10 +101,13 @@ def gather_region_fast(
 
     Returns
     -------
-    pd.DataFrame
+    pd.DataFrame or (pd.DataFrame, pd.DataFrame)
         Columns: ['Configuration', 'Group', 'low', 'high']
         where 'low' and 'high' are the min and max of mean-of-medians
         across all runs for each (Configuration, Group) pair.
+
+        If return_runs=True, additionally returns a second dataframe with
+        columns ['Configuration', 'Group', 'run_mom'].
     """
     if metric_fn is None:
         metric_fn = average_precision_score
@@ -90,25 +115,11 @@ def gather_region_fast(
     # Prepare tasks: one per results folder
     tasks = [(e['path'], e['config'], e['group']) for e in entries]
 
-    run_results = []
-    # Use a process pool to parallelize per-folder computation
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_meta = {
-            executor.submit(_compute_single_run, path, metric_fn): (cfg, grp)
-            for path, cfg, grp in tasks
-        }
-        for future in as_completed(future_to_meta):
-            cfg, grp = future_to_meta[future]
-            mom = future.result()
-            run_results.append({
-                'Configuration': cfg,
-                'Group':         grp,
-                'run_mom':       mom
-            })
-
     # Aggregate min/max of run_mom per (Configuration, Group)
-    df_runs = pd.DataFrame(run_results)
+    df_runs = _collect_run_results(tasks, metric_fn, max_workers=max_workers)
     if df_runs.empty:
+        if return_runs:
+            return df_runs, df_runs.copy()
         return df_runs
 
     summary = (
@@ -124,41 +135,42 @@ def gather_region_fast(
         summary['Configuration'], categories=configs, ordered=True
     )
 
-    return summary.sort_values('Configuration').reset_index(drop=True)
+    summary = summary.sort_values('Configuration').reset_index(drop=True)
+
+    if return_runs:
+        df_runs['Configuration'] = pd.Categorical(
+            df_runs['Configuration'], categories=configs, ordered=True
+        )
+        df_runs = df_runs.sort_values('Configuration').reset_index(drop=True)
+        return summary, df_runs
+
+    return summary
 
 def gather_points_fast(
     entries: Sequence[Dict[str,Any]],
     *,
     metric_fn: Optional[Callable[[np.ndarray, np.ndarray], float]] = None,
-    max_workers: Optional[int] = None
-) -> pd.DataFrame:
+    max_workers: Optional[int] = None,
+    return_runs: bool = False
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Parallel computation of mean-of-medians (one value per results folder),
     then for each (Configuration,Group) returns the mean of those run-mom values.
-    Output columns: ['Configuration','Group','mean_of_medians']
+
+    Returns:
+      - summary dataframe (default): ['Configuration','Group','mean_of_medians']
+      - if return_runs=True: tuple(summary, runs) where runs has
+        ['Configuration', 'Group', 'run_mom']
     """
     if metric_fn is None:
         metric_fn = average_precision_score
 
     tasks = [(e['path'], e['config'], e['group']) for e in entries]
 
-    run_results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_meta = {
-            executor.submit(_compute_single_run, path, metric_fn): (cfg, grp)
-            for path, cfg, grp in tasks
-        }
-        for future in as_completed(future_to_meta):
-            cfg, grp = future_to_meta[future]
-            mom = future.result()
-            run_results.append({
-                'Configuration': cfg,
-                'Group':         grp,
-                'run_mom':       mom
-            })
-
-    df_runs = pd.DataFrame(run_results)
+    df_runs = _collect_run_results(tasks, metric_fn, max_workers=max_workers)
     if df_runs.empty:
+        if return_runs:
+            return df_runs, df_runs.copy()
         return df_runs
 
     summary = (
@@ -174,4 +186,13 @@ def gather_points_fast(
     summary['Configuration'] = pd.Categorical(
         summary['Configuration'], categories=configs, ordered=True
     )
-    return summary.sort_values('Configuration').reset_index(drop=True)
+    summary = summary.sort_values('Configuration').reset_index(drop=True)
+
+    if return_runs:
+        df_runs['Configuration'] = pd.Categorical(
+            df_runs['Configuration'], categories=configs, ordered=True
+        )
+        df_runs = df_runs.sort_values('Configuration').reset_index(drop=True)
+        return summary, df_runs
+
+    return summary

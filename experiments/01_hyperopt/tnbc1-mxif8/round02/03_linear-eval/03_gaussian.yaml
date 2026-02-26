@@ -1,0 +1,38 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round02/03_linear-eval/03_gaussian.yaml
+type: evaluate
+evaluations:
+- test_id: T0039
+  encoder_id: E0039
+  head_id: H0039
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0040
+  encoder_id: E0040
+  head_id: H0040
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0041
+  encoder_id: E0041
+  head_id: H0041
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0042
+  encoder_id: E0042
+  head_id: H0042
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0043
+  encoder_id: E0043
+  head_id: H0043
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

@@ -56,7 +56,7 @@ def run_pretrain(recipe_path: Path, lazy_crops: bool = False):
         cache_key = f"{ds}/{an}/{idx_npz_rel}"
         idx_npz = DATASETS_DIR / ds / an / idx_npz_rel
 
-        # build df_samples exactly as you do now, then…
+        # build df_samples
         df_labels = pd.read_csv(DATASETS_DIR / ds / an / 'labels.csv')
         arr = np.load(idx_npz)
         files = arr.files

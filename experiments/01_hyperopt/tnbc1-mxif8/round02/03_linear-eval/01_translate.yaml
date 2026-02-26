@@ -1,0 +1,38 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round02/03_linear-eval/01_translate.yaml
+type: evaluate
+evaluations:
+- test_id: T0014
+  encoder_id: E0014
+  head_id: H0014
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0015
+  encoder_id: E0015
+  head_id: H0015
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0016
+  encoder_id: E0016
+  head_id: H0016
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0017
+  encoder_id: E0017
+  head_id: H0017
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+- test_id: T0018
+  encoder_id: E0018
+  head_id: H0018
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/test/test_full01.npz
+metrics:
+- pr_auc
+output:
+  results_dir: ${paths.results_dir}/tests
+  save_preds: true

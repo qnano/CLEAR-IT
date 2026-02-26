@@ -1,0 +1,89 @@
+experiment: 01_hyperopt/tnbc1-mxif8/round03/01_pretrain/01_dataset-size-same-epoch.yaml
+type: pretrain
+encoders:
+- id: E0087
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/pretrain/N409600.npz
+  dataset_size: 409600
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+- id: E0088
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/pretrain/N819200.npz
+  dataset_size: 819200
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+- id: E0089
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/pretrain/N2048000.npz
+  dataset_size: 2048000
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+- id: E0090
+  dataset_name: TNBC1-MxIF8
+  annotation_name: TME-A_ML6
+  data_index_list: indices/pretrain/N4096000.npz
+  dataset_size: 4096000
+  batch_size: 256
+  img_size: 64
+  tau: 0.05
+  optimizer: LARS
+  learning_rate: 0.3
+  transforms:
+    brightness: 0
+    contrast: 0
+    flip: 1
+    gaussian_blur: 0
+    hue: 0
+    rotate: 1
+    saturation: 0
+    translate: 0
+    zoomfactor_max: 1.5
+    zoomfactor_min: 0.75
+output:
+  models_dir: ${paths.models_dir}/encoders
