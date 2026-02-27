@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Spengler
+    given-names: Daniel
+    orcid: https://orcid.org/0009-0004-4118-7761
+  - family-names: Balcioglu
+    given-names: Hayri E.
+    orcid: https://orcid.org/0000-0002-0225-0180
+title: "CLEAR-IT"
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/qnano/CLEAR-IT"
+url: "https://github.com/qnano/CLEAR-IT"
+identifiers:
+  - type: doi
+    value: 10.4121/365ab556-b03f-49d9-b8b8-58f48aae85ec
+date-released: 2026-02-27
