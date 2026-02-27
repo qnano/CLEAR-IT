@@ -8,7 +8,7 @@ authors:
     given-names: Hayri E.
     orcid: https://orcid.org/0000-0002-0225-0180
 title: "CLEAR-IT"
-version: 1.0.0
+version: 1.0.1
 license: MIT
 repository-code: "https://github.com/qnano/CLEAR-IT"
 url: "https://github.com/qnano/CLEAR-IT"

@@ -2,11 +2,19 @@
 
 This is the repository for [CLEAR-IT: Contrastive Learning to Capture the Immune Composition of Tumor Microenvironments](https://doi.org/10.1101/2024.08.20.608738).
 
-For pre-trained models, embeddings, and model predictions, see our supplementary data repository DOI: [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f) (pending publication).
+For pre-trained models, embeddings, and model predictions, see our supplementary data repository DOI: [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f).
+
+## Citation
+
+If you use CLEAR-IT, please cite:
+
+- Archived software snapshot for manuscript reproducibility (4TU DOI): [10.4121/365ab556-b03f-49d9-b8b8-58f48aae85ec](https://doi.org/10.4121/365ab556-b03f-49d9-b8b8-58f48aae85ec)
+- TNBC1-MxIF8 dataset images: [10.4121/126d8103-6de5-4493-a48e-5d529fef471e](https://doi.org/10.4121/126d8103-6de5-4493-a48e-5d529fef471e)
+- CLEAR-IT supplementary data (models/embeddings/outputs): [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f)
 
 ## Runtime environment
 
-CLEAR-IT is actively maintained and tested in the provided Docker environment (`clearit.Dockerfile`).
+CLEAR-IT is maintained and tested in the provided Docker environment (`clearit.Dockerfile`).
 Local (non-Docker) installation is available for advanced users, but Docker is the primary tested path.
 
 ## Installation
