@@ -1,4 +1,3 @@
-# clearit/config.py
 """
 Configuration loader for the CLEAR-IT project.
 

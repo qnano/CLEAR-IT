@@ -1,4 +1,3 @@
-# clearit/trainers/encoder_trainer.py
 import yaml
 from pathlib import Path
 from time import time
@@ -19,21 +18,21 @@ class EncoderTrainer:
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1) load defaults
+        # Load defaults.
         defaults_path = Path(__file__).parent.parent / "configs" / "pretrainer_defaults.yaml"
         defaults = yaml.safe_load(defaults_path.read_text())
 
-        # 2) load existing user config if present
+        # Load an existing user config when present.
         user_cfg_path = self.model_dir / "conf_enc.yaml"
         user_cfg = yaml.safe_load(user_cfg_path.read_text()) if user_cfg_path.exists() else {}
 
-        # 3) merge: defaults ← user_cfg ← overrides
+        # Merge defaults, user config, and overrides.
         cfg = {**defaults, **user_cfg}
         if 'transforms' in overrides:
             cfg['transforms'].update(overrides.pop('transforms'))
         cfg.update(overrides)
 
-        # 4) sanity defaults
+        # Fill in required default values.
         cfg.setdefault('init_time', int(time()))
         cfg.setdefault('status', 0)
 
@@ -80,14 +79,14 @@ class EncoderTrainer:
         """
         cfg = self.config
 
-        # derive how many projector‐layers we actually configured
+        # Determine how many projector layers are configured.
         mlp_sizes   = cfg.get('mlp_layers', [])
         n_proj_layers = len(mlp_sizes)
 
-        # if mlp_features isn’t explicitly given, fall back to last size
+        # Fall back to the last hidden size when mlp_features is omitted.
         mlp_feat = cfg.get('mlp_features', mlp_sizes[-1] if mlp_sizes else cfg['encoder_features'])
 
-        # now instantiate with the integer count + feature dim
+        # Instantiate the encoder with the resolved projection depth.
         self.model = ResNetEncoder(
             encoder_name     = cfg['encoder_name'],
             encoder_features = cfg['encoder_features'],

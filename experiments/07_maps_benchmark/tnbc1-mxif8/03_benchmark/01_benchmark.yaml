@@ -1,0 +1,81 @@
+experiment: 07_benchmark/tnbc1-mxif8/03_benchmark/01_benchmark.yaml
+type: maps_benchmark
+target:
+  key: tnbc1-mxif8
+  dataset_name: TNBC1-MxIF8
+  annotation_name: inForm_MC7
+  self_slug: tnbc1-mxif8
+  published_name: TNBC1-MxIF8
+split:
+  training_pool:
+    source: public_patient_rankings
+    ranking_subdir: TNBC1-MxIF8
+    column: patient_id
+    exclude_ids:
+    - P48
+    - P49
+    - P50
+    - P51
+    - P52
+    - P53
+    - P54
+    - P55
+    - P56
+    - P57
+    - P58
+    - P59
+    - P60
+    - P61
+    - P62
+  test_ids:
+  - P48
+  - P49
+  - P50
+  - P51
+  - P52
+  - P53
+  - P54
+  - P55
+  - P56
+  - P57
+  - P58
+  - P59
+  - P60
+  - P61
+  - P62
+sampling:
+  seed: 42
+  k_values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  sample_sizes:
+  - label: 6
+  - label: 12
+  - label: 18
+  - label: 30
+  - label: 39
+  - label: 47
+training:
+  num_classes: 7
+  max_epochs: 250
+  min_epochs: 50
+  patience: 50
+modalities:
+- name: features
+  data_parts: [features]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+- name: expressions
+  data_parts: [expressions]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+- name: features_expressions
+  data_parts: [features, expressions]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+output:
+  scenario: labelreduction_with_sampling

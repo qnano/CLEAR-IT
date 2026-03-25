@@ -1,4 +1,3 @@
-# clearit/models/head.py
 import torch.nn as nn
 from abc import ABC, abstractmethod
 
@@ -39,12 +38,12 @@ class MLPHead(BaseHead):
         return self.head(x)
 
     def load_state_dict(self, state_dict, strict: bool = True):
-        # detect old‐format keys (no "head." prefix)
+        # Add the "head." prefix when checkpoint keys omit it.
         if not any(k.startswith('head.') for k in state_dict):
             state_dict = {f"head.{k}": v for k, v in state_dict.items()}
         super().load_state_dict(state_dict, strict=strict)
 
     def get_output_size(self):
-        # final Linear’s out_features
+        # Return the final Linear layer output size.
         final_lin = [m for m in self.head if isinstance(m, nn.Linear)][-1]
         return final_lin.out_features

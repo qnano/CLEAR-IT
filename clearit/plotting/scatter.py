@@ -1,4 +1,3 @@
-# clearit/plotting/scatter.py
 """
 Scatter plots for per-patient performance vs. image-quality rankings.
 
@@ -88,7 +87,7 @@ def scatter_performance_vs_rank(
     ax.set_xlabel(xlabel, fontsize=8)
     ax.set_ylabel(ylabel, fontsize=8)
 
-    # ----- Title logic -----
+    # Title logic
     if len(rank_cols) == 1:
         col = rank_cols[0]
         r, p = corr_map[col]
@@ -96,7 +95,7 @@ def scatter_performance_vs_rank(
         # Base title: user-provided or column name
         base_title = title or col
 
-        # Append Spearman text + r and p on new lines
+        # Append Spearman text with r and p on separate lines.
         full_title = (
             f"{base_title}\n"
             f"Spearman correlation coeff.\n"

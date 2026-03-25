@@ -29,7 +29,7 @@ from clearit.leiden.preprocess import standardize_and_pca
 from clearit.leiden.graph import build_knn_graph
 
 
-# ----------------------------- Configuration -----------------------------
+# Configuration
 
 # Dataset selection
 DATASET = "TNBC1"  # "TNBC1" or "TNBC2"
@@ -39,7 +39,7 @@ SPLIT = "train"    # "train" or "test"
 H5_TNBC1 = EMBEDDINGS_DIR / "TNBC1-MxIF8"  / "inForm_MC7"    / "01_features-expressions" / "tnbc1-mxif8.hdf5"
 H5_TNBC2 = EMBEDDINGS_DIR / "TNBC2-MIBI44" / "DeepCell_MC17" / "01_features-expressions" / "tnbc2-mibi8.hdf5"
 
-# Embedding + graph defaults (centered on your current working point)
+# Default embedding and graph settings for the scan.
 PCA_DIMS_DEFAULT = 64
 K_GRID = [40, 50, 60, 70, 80]                  # includes 60
 RES_GRID = [0.5, 0.6, 0.7, 0.8, 0.9]           # includes 0.7
@@ -58,7 +58,7 @@ OUT_DIR = OUTPUTS_DIR / "leiden"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ------------------------------- Utilities -------------------------------
+# Utilities
 
 @dataclass
 class PartitionStats:
@@ -115,7 +115,7 @@ def choose_split_patients(h5_path: Path) -> Tuple[list[str], list[str]]:
     return pts[:n_train], pts[n_train:]
 
 
-# --------------------------------- Main ----------------------------------
+# Main
 
 def main():
     # Resolve dataset path

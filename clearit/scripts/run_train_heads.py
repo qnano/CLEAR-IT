@@ -1,4 +1,3 @@
-# clearit/scripts/run_train_heads.py
 """
 Wrapper to train classification heads from a YAML recipe.
 
@@ -76,7 +75,7 @@ def run_train_heads(recipe_path: Path):
         overrides = {
             k: v for k, v in job.items()
         }
-        # inject our cache_key
+        # Add the cache key to the trainer overrides.
         overrides['cache_key'] = cache_key
 
         # Define and create necessary directories

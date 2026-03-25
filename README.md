@@ -125,7 +125,7 @@ This repository's structure is as follows:
 ├── notebooks              # Jupyter Notebooks for plotting
 ├── requirements.txt       # requirements.txt for custom environments
 ├── scripts                # Scripts for converting external datasets used in the study to a unified format
-└── setup.py               # setup.py for local installs of clearit and maps (MAPS benchmark dependency)
+└── setup.py               # setup.py for local installs of clearit
 ```
 
 We recommend placing the contents of supplementary data repository DOI [10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f](https://doi.org/10.4121/ebc792ad-4767-4aef-b8ff-ae653e901e3f) in this directory (or somewhere else on fast storage), extending the structure as follows:
@@ -154,6 +154,20 @@ paths:
 ```
 
 By modifying the `config.yaml`, you are free to choose where you place individual directories (if space is a concern). If you want to train models, we recommend putting the `datasets` directory on fast storage (for example an SSD).
+
+## MAPS benchmark attribution
+
+The MAPS benchmark stage in `clearit/maps_benchmark` contains a small
+MAPS-derived runtime adapted for the public CLEAR-IT reproduction pipeline.
+In case you use this, please also cite the original MAPS paper:
+
+- Shaban, M., Bai, Y., Qiu, H. et al. *MAPS: pathologist-level cell type annotation from tissue images through machine learning*. Nature Communications 15, 28 (2024). https://doi.org/10.1038/s41467-023-44188-w
+
+Upstream repository:
+
+- https://github.com/mahmoodlab/MAPS
+
+License and attribution details for the vendored MAPS-derived files are listed in `clearit/maps_benchmark/THIRD_PARTY_NOTICES.md`.
 
 ## Troubleshooting
 

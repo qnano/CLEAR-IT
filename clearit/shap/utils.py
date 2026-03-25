@@ -1,4 +1,3 @@
-# clearit/shap/utils.py
 from pathlib import Path
 from typing import Optional, Tuple
 import yaml

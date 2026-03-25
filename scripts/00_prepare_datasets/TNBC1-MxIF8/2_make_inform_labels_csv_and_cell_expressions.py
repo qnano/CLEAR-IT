@@ -60,7 +60,7 @@ def process_csv_file(file_path: Path):
     df = pd.read_csv(file_path)
     fname = file_path.stem.replace("_cell_seg_data", "")
 
-    # --- Prepare labels (MC7) ---
+    # Prepare labels (MC7).
     labels_rename = {
         "Cell ID": "cell_id",
         "Entire Cell Area (pixels)": "cell_area",
@@ -75,7 +75,7 @@ def process_csv_file(file_path: Path):
     df_labels["fname"] = fname
     df_labels = df_labels[["cell_id", "cell_area", "cell_x", "cell_y", "label", "fname"]]
 
-    # --- Prepare expressions ---
+    # Prepare expressions.
     expr_rename = {
         "Cell ID": "cell_id",
         "Entire Cell DAPI Mean (Normalized Counts, Total Weighting)": "DAPI",
@@ -119,7 +119,7 @@ def generate_and_save():
         else:
             continue
 
-    # --- Save MC7 outputs ---
+    # Save MC7 outputs.
     # labels
     labels_path = mc7_out / "labels.csv"
     all_labels.to_csv(labels_path, index=False)
@@ -133,7 +133,7 @@ def generate_and_save():
     all_exprs.to_csv(expr_path, index=False)
     print(f"[MC7] cell_expressions saved to {expr_path}")
 
-    # --- Save ML6 outputs ---
+    # Save ML6 outputs.
     ml6_df = all_labels.copy()
     ml6_df["label"] = ml6_df["label"].apply(lambda x: MULTICLASS_TO_MULTILABEL[x])
     ml6_labels_path = ml6_out / "labels.csv"

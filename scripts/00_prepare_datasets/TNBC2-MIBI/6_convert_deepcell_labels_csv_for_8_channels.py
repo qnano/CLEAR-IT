@@ -4,7 +4,7 @@ Convert DeepCell_MC17 labels to DeepCell_ML6 multilabel set for TNBC2-MIBI8.
 
 - Reads `labels.csv` from `datasets/TNBC2-MIBI44/DeepCell_MC17`
 - Maps each multiclass label to a 6-element multilabel list
-- Writes new `labels.csv` to `datasets/TNBC2-MIBI8/DeepCell_ML6`
+- Writes the converted `labels.csv` to `datasets/TNBC2-MIBI8/DeepCell_ML6`
 - Copies `class_names.csv` from the TNBC2-MIBI8/TME-A_ML6 folder into DeepCell_ML6
 """
 import shutil
@@ -61,7 +61,7 @@ def main():
     # Ensure output directory
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save new labels.csv
+    # Save the converted labels.csv
     df.to_csv(OUT_LABELS, index=False)
     print(f"Converted labels saved to {OUT_LABELS}")
 

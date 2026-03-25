@@ -1,4 +1,3 @@
-# clearit/plotting/boxplot.py
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -97,7 +96,7 @@ def boxplot_performance(
             'upper_whisker': wu,
         }
 
-    # 1) Prepare order & palette
+    # Prepare order and palette.
     if order is None:
         order = sorted(df[x_col].unique())
     groups = list(df[group_col].unique())
@@ -117,7 +116,7 @@ def boxplot_performance(
 
     grey_rgb = mcolors.to_rgb('lightgray')
 
-    # 2) Draw the overall “total” box
+    # Draw the overall "total" box.
     if show_total:
         total_df = df[[x_col, value_col]].copy()
         sns.boxplot(
@@ -132,7 +131,7 @@ def boxplot_performance(
             boxprops={'facecolor': 'lightgray', 'edgecolor': 'lightgray'}
         )
 
-    # 3) Draw the per‐group boxes, but remove their outlines by setting linewidth=0
+    # Draw the per-group boxes without visible outlines.
     sns.boxplot(
         data=df,
         x=x_col, y=value_col, hue=group_col,
@@ -142,37 +141,37 @@ def boxplot_performance(
         showfliers=showfliers,
         dodge=True,
         ax=ax,
-        boxprops={'linewidth': 0},            # ← no visible box border
+        boxprops={'linewidth': 0},
         medianprops={'label': '_median_'},
         whiskerprops={'label': '_whisker_'},
         capprops={'label': '_cap_'}
     )
 
-    # 4) Re‐outline each group‐box by matching its facecolor back to the palette
+    # Reapply outlines that match each box facecolor.
     for box in ax.artists:
         fc = box.get_facecolor()[:3]
-        # skip the grey “total” if present
+        # Skip the grey "total" box if present.
         if np.allclose(fc, grey_rgb, atol=1e-3):
             box.set_edgecolor(grey_rgb)
             continue
-        # find which group this belongs to
+        # Match the facecolor back to its group.
         for grp, col in palette.items():
             if np.allclose(fc, col, atol=1e-3):
                 box.set_facecolor(col)
                 box.set_edgecolor(col)
                 break
 
-    # 5) Re‐color the median, whisker and cap lines
+    # Recolor the median, whisker, and cap lines.
     median_lines  = [l for l in ax.lines if l.get_label() == '_median_']
     whisker_lines = [l for l in ax.lines if l.get_label() == '_whisker_']
     cap_lines     = [l for l in ax.lines if l.get_label() == '_cap_']
 
-    # medians
+    # Medians
     for i, ln in enumerate(median_lines):
         grp = groups[i % len(groups)]
         ln.set_color(get_group_color(grp, 2))
         ln.set_linewidth(1.5)
-    # whiskers & caps
+    # Whiskers and caps
     for i, ln in enumerate(whisker_lines):
         grp = groups[(i // 2) % len(groups)]
         ln.set_color(get_group_color(grp, 0))
@@ -182,7 +181,7 @@ def boxplot_performance(
         ln.set_color(get_group_color(grp, 0))
         ln.set_linewidth(1.5)
 
-    # 6) Add dashed “mean of medians” lines
+    # Add dashed "mean of medians" lines.
     mom_series = None
     if show_mean_of_medians:
         mom_series = (
@@ -202,7 +201,7 @@ def boxplot_performance(
             label='mean of medians'
         )
 
-    # 7) Build the legend: first the hue handles, then “total”, then “mean of medians”
+    # Build the legend from group handles, then add "total" and "mean of medians".
     handles, labels = ax.get_legend_handles_labels()
 
     # Remap labels for display
@@ -226,7 +225,7 @@ def boxplot_performance(
         frameon=False
     )
 
-    # 8) Final styling
+    # Final styling
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel or value_col)
@@ -242,9 +241,7 @@ def boxplot_performance(
     if not show:
         plt.close(fig)
 
-    # ---------------------------------------------------------------------
-    # Build the summary table (as before)
-    # ---------------------------------------------------------------------
+    # Build the summary table.
     med = (
         df.groupby([x_col, group_col])[value_col]
           .median()
@@ -280,10 +277,8 @@ def boxplot_performance(
     summary_df = summary_df[cols]  # enforce column order
     summary_df = summary_df.reindex(order)
 
-    # ---------------------------------------------------------------------
-    # Build the per-legend-entry tables defining the boxes and lines
-    # ---------------------------------------------------------------------
-    # 1) Box stats per (x_col, group_col) – for the hue groups
+    # Build the per-legend-entry tables defining boxes and lines.
+    # Box stats per (x_col, group_col) for hue groups.
     records = []
     for xc in order:
         for grp in groups:
@@ -306,7 +301,7 @@ def boxplot_performance(
     plot_tables: Dict[str, pd.DataFrame] = {}
     for grp in groups:
         if (x_col, grp) not in box_stats_df.index:
-            # if a group is entirely missing, skip it
+            # Skip groups that are entirely missing.
             if not (box_stats_df.index.get_level_values(group_col) == grp).any():
                 continue
         grp_df = box_stats_df.xs(grp, level=group_col).copy()
@@ -315,7 +310,7 @@ def boxplot_performance(
         plot_tables[str(grp)] = grp_df
 
 
-    # 2) "total" box stats, if requested
+    # "Total" box stats, if requested.
     if show_total:
         total_records = []
         for xc in order:
@@ -335,7 +330,7 @@ def boxplot_performance(
             plot_tables['total'] = total_df_stats
 
 
-    # 3) "mean of medians" line, if requested
+    # "Mean of medians" line, if requested.
     if show_mean_of_medians and mom_series is not None:
         mom_df = mom_series.to_frame(name='mean_of_medians').copy()
         mom_df.index.name = x_col

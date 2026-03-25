@@ -1,9 +1,11 @@
-# clearit/augmentations/kornia_extra.py
-# Modified functions and classes from kornia library to enable translation augmentation in radial direction
-# RandomTranslate:    https://github.com/kornia/kornia/blob/9329a5bed2aa05bbc1e3a51707335156638f9060/kornia/augmentation/_2d/geometric/translate.py#L10
-# TranslateGenerator: https://github.com/kornia/kornia/blob/9329a5bed2aa05bbc1e3a51707335156638f9060/kornia/augmentation/random_generator/_2d/translate.py#L14
-#
-# ==============================================================================
+"""Kornia-derived augmentation helpers adapted for radial translation.
+
+Adapted from:
+- RandomTranslate:
+  https://github.com/kornia/kornia/blob/9329a5bed2aa05bbc1e3a51707335156638f9060/kornia/augmentation/_2d/geometric/translate.py#L10
+- TranslateGenerator:
+  https://github.com/kornia/kornia/blob/9329a5bed2aa05bbc1e3a51707335156638f9060/kornia/augmentation/random_generator/_2d/translate.py#L14
+"""
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -317,7 +319,7 @@ class RandomRightAngleRotation(nn.Module):
 
         # per-sample coin flips
         apply_mask = (torch.rand((B,), device=device) < self.p)
-        # sample k for everyone, then zero out k where we don't apply
+        # Sample rotation indices, then zero them where augmentation is skipped.
         ks = torch.randint(0, 4, (B,), device=device)
         ks = ks * apply_mask.to(torch.long)
 

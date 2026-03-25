@@ -6,17 +6,17 @@ Input:
     - A CSV produced by compute_image_statistics_extended.py, containing
       per-image metrics (one row per TIFF, with 'patient_id' column).
 
-Steps:
-    1. Aggregate per-image metrics to per-patient metrics via median.
-    2. Compute the legacy image-quality ranking based on selected channels
-       and the 'percentile_0.1_std' (and 'percentile_100.0_std' for background).
-    3. Save a CSV with per-patient ranking information.
+Workflow:
+    - Aggregate per-image metrics to per-patient metrics via median.
+    - Compute the image-quality ranking based on selected channels and the
+      'percentile_0.1_std' (and 'percentile_100.0_std' for background).
+    - Save a CSV with per-patient ranking information.
 
 Output:
     - patient_rankings.csv in the specified output directory, with columns:
         * patient_id
         * n_images
-        * Total_Score_std   (legacy image quality score)
+        * Total_Score_std   (image quality score)
         * Normalized_Score_std
         * Rank_desc         (1 = best image quality)
 """
@@ -29,11 +29,9 @@ import numpy as np
 import pandas as pd
 
 
-# ---------------------------------------------------------------------------
-# Legacy ranking configuration
-# ---------------------------------------------------------------------------
+# Ranking configuration
 
-# Channels & settings used in the original notebook-based ranking:
+# Channels and settings used for the notebook-based ranking.
 # (channel_index, percentile, ascending_flag)
 # ascending=True  -> smaller metric value gets a better rank (rank=1)
 # ascending=False -> larger metric value gets a better rank (rank=1)
@@ -49,7 +47,7 @@ LEGACY_CHANNEL_CONFIG = [
 
 def build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
     """
-    Build a mapping {column_name: ascending_bool} for the legacy ranking.
+    Build a mapping {column_name: ascending_bool} for the ranking score.
     """
     order_dict: Dict[str, bool] = {}
     for channel_idx, percent, ascending in LEGACY_CHANNEL_CONFIG:
@@ -58,9 +56,7 @@ def build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
     return order_dict
 
 
-# ---------------------------------------------------------------------------
 # Core routines
-# ---------------------------------------------------------------------------
 
 def aggregate_per_patient(df_images: pd.DataFrame) -> pd.DataFrame:
     """
@@ -100,7 +96,7 @@ def aggregate_per_patient(df_images: pd.DataFrame) -> pd.DataFrame:
 
 def compute_legacy_ranking(df_patient: pd.DataFrame) -> pd.DataFrame:
     """
-    Given a per-patient metrics DataFrame, compute the legacy ranking
+    Given a per-patient metrics DataFrame, compute the ranking
     and append these columns:
         - Total_Score_std
         - Normalized_Score_std
@@ -112,7 +108,7 @@ def compute_legacy_ranking(df_patient: pd.DataFrame) -> pd.DataFrame:
     missing = [col for col in order_dict if col not in df_patient.columns]
     if missing:
         raise KeyError(
-            "The following required columns for legacy ranking are missing "
+            "The following required columns for ranking are missing "
             f"from the per-patient dataframe:\n{missing}"
         )
 
@@ -125,7 +121,7 @@ def compute_legacy_ranking(df_patient: pd.DataFrame) -> pd.DataFrame:
         df[rank_col] = df[col].rank(method="min", ascending=ascending)
         rank_cols.append(rank_col)
 
-    # Sum of ranks = legacy quality score
+    # Sum the ranks into the image-quality score.
     df["Total_Score_std"] = df[rank_cols].sum(axis=1)
 
     # Normalize to [0, 1] (higher = better)
@@ -141,13 +137,11 @@ def compute_legacy_ranking(df_patient: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ---------------------------------------------------------------------------
 # Script entry point
-# ---------------------------------------------------------------------------
 
 def main(stats_csv_path: str, output_dir: str) -> None:
     """
-    Compute per-patient legacy rankings from an extended stats CSV.
+    Compute per-patient rankings from an extended stats CSV.
 
     Parameters
     ----------
@@ -169,7 +163,7 @@ def main(stats_csv_path: str, output_dir: str) -> None:
     print("Aggregating per-patient metrics (median over images)...")
     df_patient = aggregate_per_patient(df_images)
 
-    print("Computing legacy image-quality ranking...")
+    print("Computing image-quality ranking...")
     df_ranked = compute_legacy_ranking(df_patient)
 
     # Sort by quality (best first)

@@ -1,4 +1,3 @@
-# clearit/shap/importance.py
 
 from typing import Optional, List
 import ast

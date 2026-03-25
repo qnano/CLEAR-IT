@@ -1,4 +1,3 @@
-# clearit/inference/utils.py
 import os, random
 import numpy as np
 
@@ -18,7 +17,7 @@ import yaml
 def load_encoder_only(
     encoder_id: str,
     device: Optional[torch.device] = None,
-    proj_layers: int = 0,  # <- NEW: control how many projector layers to keep
+    proj_layers: int = 0,
 ) -> ResNetEncoder:
     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
@@ -28,15 +27,19 @@ def load_encoder_only(
     k = int(proj_layers)
     mlp_list = list(cfg.get('mlp_layers', []))[:k]
 
+    ckpt = torch.load(enc_dir / 'enc.pt', map_location='cpu')
+    conv1_key = 'main_backbone.conv1.weight'
+    in_channels = int(ckpt[conv1_key].shape[1]) if conv1_key in ckpt else 3
+
     encoder = ResNetEncoder(
         encoder_name     = cfg['encoder_name'],
         encoder_features = cfg['encoder_features'],
         mlp_layers       = mlp_list,
         mlp_features     = cfg['mlp_features'],
+        in_channels      = in_channels,
     )
-    ckpt = torch.load(enc_dir / 'enc.pt', map_location='cpu')
     r = encoder.load_state_dict(ckpt, strict=False)
-    # match old training behavior: no trained fc in ckpt → use Identity
+    # Match checkpoints trained without a learned fc layer.
     if "main_backbone.fc.weight" in r.missing_keys or "main_backbone.fc.bias" in r.missing_keys:
         import torch.nn as nn
         encoder.main_backbone.fc = nn.Identity()
@@ -47,7 +50,7 @@ def load_encoder_only(
 def _build_loader_from_df(
     df_samples,
     dataset_name: str,
-    annotation_name: str,     # kept for signature compatibility
+    annotation_name: str,     # retained for signature compatibility
     config: dict,
     device,
     num_workers: int = 0,
@@ -57,14 +60,14 @@ def _build_loader_from_df(
     - sort by (fname, cell_x, cell_y) and reset index,
     - disable shuffle in the returned DataLoader.
     """
-    # stable row order
+    # Preserve a stable row order.
     cols = [c for c in ("fname", "cell_x", "cell_y") if c in df_samples.columns]
     if cols:
         df_samples = df_samples.sort_values(cols).reset_index(drop=True)
     else:
         df_samples = df_samples.reset_index(drop=True)
 
-    # get the (train, None) pair from the manager
+    # Request a single deterministic split from the manager.
     loader_train, _ = ClassificationDataManager.get_dataloader(
         dataset_name = f"{dataset_name}",
         df_samples   = df_samples,
@@ -76,11 +79,11 @@ def _build_loader_from_df(
         verbose      = False,
     )
 
-    # rebuild a *non-shuffling* loader over the same dataset
+    # Rebuild a non-shuffling loader over the same dataset.
     loader = DataLoader(
         loader_train.dataset,
         batch_size         = loader_train.batch_size,
-        shuffle            = False,                      # <— important
+        shuffle            = False,
         num_workers        = max(0, int(num_workers)),
         pin_memory         = (str(device) == 'cuda'),
         persistent_workers = (num_workers > 0),
@@ -100,7 +103,7 @@ def get_classification_predictions(
     _ensure_determinism(0)
     device = device or (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    # build a deterministic loader
+    # Build a deterministic loader.
     cfg = dict(
         batch_size  = batch_size,
         img_size    = int(df_samples.attrs.get('img_size', 64)),
@@ -110,15 +113,15 @@ def get_classification_predictions(
     )
     loader = _build_loader_from_df(df_samples, dataset_name, annotation_name, cfg, device, num_workers)
 
-    # load model (already .eval() inside), but assert anyway
+    # Load the model and confirm evaluation mode throughout.
     model = load_encoder_head(encoder_id, head_id, device=device)
     model.eval()
     for m in model.modules():
-        # sanity: no Dropout/BN in training mode
+        # Dropout and batch-norm layers should stay in eval mode.
         if isinstance(m, (torch.nn.Dropout, torch.nn.BatchNorm2d, torch.nn.BatchNorm1d)):
             assert m.training is False
 
-    # run inference
+    # Run inference.
     import pandas as pd
     rows = []
     multilabel = (cfg['label_mode'] == 'multilabel')
@@ -150,7 +153,7 @@ def get_embeddings(
     encoder_id: str,
     batch_size: int = 128,
     num_workers: int = 0,
-    proj_layers: int = 0,  # how many SimCLR proj layers to include in features
+    proj_layers: int = 0,
     device=None,
 ):
     _ensure_determinism(0)
@@ -165,7 +168,7 @@ def get_embeddings(
     )
     loader = _build_loader_from_df(df_samples, dataset_name, annotation_name, cfg, device, num_workers)
 
-    # encoder-only, consistent with classifier loading
+    # Load the encoder using the same checkpoint handling as classifier inference.
     enc = load_encoder_only(encoder_id, device=device, proj_layers=proj_layers)
     enc.eval()
 
@@ -174,8 +177,9 @@ def get_embeddings(
         for imgs, *_ in loader:
             imgs = imgs.to(device, non_blocking=True)  # [B,C,H,W]
             B, C, H, W = imgs.shape
-            # same channel unroll as EncoderClassifier
-            x = imgs.view(B*C, 1, H, W).repeat(1, 3, 1, 1)
+            x = imgs.view(B * C, 1, H, W)
+            if enc.main_backbone.conv1.in_channels == 3:
+                x = x.repeat(1, 3, 1, 1)
             feats = enc(x)                     # [B*C, F_k]
             feats = feats.view(B, C, -1).reshape(B, -1)  # [B, C*F_k]
             outs.append(feats.cpu())
@@ -197,4 +201,4 @@ def _ensure_determinism(seed: int = 0):
 
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
-    # DO NOT call torch.use_deterministic_algorithms(True)
+    # torch.use_deterministic_algorithms(True) remains intentionally disabled.

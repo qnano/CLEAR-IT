@@ -1,0 +1,25 @@
+experiment: 07_benchmark/crc-codex26/02_embed/01_embed.yaml
+type: embed
+target:
+  key: crc-codex26
+  dataset_name: CRC-CODEX26
+  annotation_name: DeepCell_MC14
+  self_slug: crc-codex26
+batch_size: 512
+num_workers: 0
+lazy_crops: true
+jobs:
+- encoder_id: E2003
+  source_slug: tnbc1-mxif8
+  source_order: 1
+- encoder_id: E2004
+  source_slug: tnbc2-mibi8
+  source_order: 2
+- encoder_id: E2005
+  source_slug: crc-codex26
+  source_order: 3
+- encoder_id: E2006
+  source_slug: tonsil-imc41
+  source_order: 4
+output:
+  embeddings_dir: ${paths.embeddings_dir}

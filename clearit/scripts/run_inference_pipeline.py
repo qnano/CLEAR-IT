@@ -1,4 +1,3 @@
-# clearit/scripts/run_inference_pipeline.py
 import yaml, torch, numpy as np, pandas as pd
 from pathlib import Path
 from tqdm import tqdm
@@ -87,9 +86,7 @@ def run_inference(recipe_path: Path):
         for base, data in results.items():
             pd.DataFrame(data).to_csv(out_dir/f"{base}.csv", index=False)
 
-        # ---------------------------------------------------------
-        #  Write out a conf_test.yaml describing this run
-        # ---------------------------------------------------------
+        # Write conf_test.yaml describing this run.
         test_conf = {
             'annotation_name':   an,
             'data_index_list':   ev['data_index_list'],

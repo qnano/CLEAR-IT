@@ -1,4 +1,3 @@
-# clearit/explain/shap_utils.py
 from typing import List, Optional, Sequence, Tuple
 import math
 import numpy as np
@@ -7,7 +6,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data._utils.collate import default_collate
 
-# SHAP (install: pip install shap>=0.42.0)
+# SHAP dependency (install with: pip install shap>=0.42.0)
 import shap
 
 # Optional smoothing backend(s)
@@ -28,7 +27,7 @@ import yaml
 from clearit.config import MODELS_DIR, OUTPUTS_DIR
 
 
-# ---------- Utilities ----------
+# Utilities
 
 def _collate_skip_none(batch):
     """Collate that drops None samples rather than crashing."""
@@ -99,7 +98,7 @@ def _patch_torchvision_resnet_relu_noninplace() -> None:
     tv_resnet._clearit_patched_relu = True
 
 
-# ---------- Model loading ----------
+# Model loading
 
 def load_model(
     encoder_id: str,
@@ -150,7 +149,7 @@ def load_model_from_test(test_id: str, device: torch.device = None):
     return model, test_cfg, head_cfg
 
 
-# ---------- DataLoader for SHAP ----------
+# DataLoader for SHAP
 
 def get_dataloader_for_shap(
     df_samples,
@@ -194,7 +193,7 @@ def get_dataloader_for_shap(
     return loader, ds
 
 
-# ---------- SHAP explainer prep ----------
+# SHAP explainer setup
 
 class _ModelWrapper(nn.Module):
     """
@@ -243,7 +242,7 @@ def prepare_shap_explainer(
                 if bidx + 1 >= max(1, int(background_max_batches)):
                     break
         background = torch.cat(imgs_accum, dim=0).to(device)
-        # Optionally reduce (e.g., take a few exemplars). Here we keep as-is.
+        # Keep the collected background samples unchanged.
 
     # Make all ReLUs non-inplace for stability
     _set_all_relu_non_inplace(model)
@@ -256,7 +255,7 @@ def prepare_shap_explainer(
     return explainer, background, sample_in
 
 
-# ---------- SHAP computation ----------
+# SHAP computation
 
 def compute_shap_values_batch(
     explainer: shap.DeepExplainer,
@@ -268,9 +267,9 @@ def compute_shap_values_batch(
     """
     Compute SHAP values for every sample in dataloader.
 
-    Output shape: (N, C, H, W, K)  — per-class attributions on the original inputs.
-    (If your old code expected an extra simulated-RGB axis, average it away — we
-     already attribute w.r.t. the [C,H,W] inputs before the internal 3x replication.)
+    Output shape: `(N, C, H, W, K)` with per-class attributions on the model inputs.
+    Consumers that use a simulated-RGB view can recover it by averaging over
+    the replicated RGB axis after loading.
     """
     device = device or (torch.device("cuda") if torch.cuda.is_available()
                         else torch.device("cpu"))
@@ -306,7 +305,7 @@ def compute_shap_values_batch(
     return shap_values, all_indices
 
 
-# ---------- Post-processing & plotting ----------
+# Post-processing and plotting
 
 def smooth_shap_maps(
     shap_values: np.ndarray,
@@ -316,8 +315,8 @@ def smooth_shap_maps(
     Apply Gaussian smoothing over the spatial dimensions (H,W).
 
     Supports:
-      (N, C, H, W, K)        — current default
-      (N, C, 3, H, W, K)     — legacy format (simulated RGB per channel)
+      (N, C, H, W, K)        - standard layout
+      (N, C, 3, H, W, K)     - simulated-RGB layout per channel
 
     Returns an array with identical shape to the input.
     """
@@ -361,12 +360,12 @@ def plot_shap_heatmaps(
     Colorbar gets its own fixed column so layout shouldn't break.
 
     Accepts shapes:
-      (N, C, H, W, K)        ← preferred (CLEAR-IT inputs)
-      (N, C, 3, H, W, K)     ← legacy; averages over axis=2
+      (N, C, H, W, K)        - standard CLEAR-IT input layout
+      (N, C, 3, H, W, K)     - simulated-RGB layout; averages over axis=2
     """
     arr = np.asarray(shap_values)
 
-    # Legacy simulated-RGB → average it away
+    # Average over the simulated RGB axis.
     if arr.ndim == 6:  # (N, C, 3, H, W, K)
         arr = arr.mean(axis=2)
     if arr.ndim != 5:
@@ -391,10 +390,10 @@ def plot_shap_heatmaps(
     vmax = vmax if vmax > 0 else 1e-8
     vmin = -vmax
 
-    # We’ll visualize as (K, C, H, W)
+    # Arrange as (K, C, H, W) for plotting.
     vis = np.transpose(arr, (3, 0, 1, 2))
 
-    # ---- Layout: K rows, C image columns + 1 colorbar column ----
+    # Layout: K rows, C image columns, and one colorbar column.
     fig_h = max(2.0, K * figsize_multiplier)
     fig_w = max(2.0, C * figsize_multiplier) + 0.6  # extra width for cbar
     fig = plt.figure(figsize=(fig_w, fig_h))
@@ -425,14 +424,14 @@ def plot_shap_heatmaps(
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("SHAP value", rotation=270, labelpad=12)
 
-    # Title & spacing (avoid tight_layout; we already manage geometry)
+    # Set the title and spacing without calling tight_layout.
     fig.suptitle(title, fontsize=14, y=0.99)
     fig.subplots_adjust(top=0.92)
 
     return fig, axs
 
 
-# ---------- Simple report helper ----------
+# Report helper
 
 def classification_report(df, class_columns: List[str]) -> "pd.DataFrame":
     """

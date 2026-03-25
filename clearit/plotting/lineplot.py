@@ -1,4 +1,3 @@
-# clearit/plotting/lineplot.py
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -75,7 +74,7 @@ def plot_region_and_lines(
     plt.rcParams.update({'font.size': font_size})
     fig, ax = (plt.subplots(figsize=figsize) if ax is None else (ax.figure, ax))
 
-    # 1) Create our x-axis positions and tick labels
+    # Create x-axis positions and tick labels.
     x_vals = list(region_df[config_col].to_list())
     if categorical_x:
         x_pos      = np.arange(len(x_vals))
@@ -86,7 +85,7 @@ def plot_region_and_lines(
         xtick_lbls = x_vals
     x_lookup = dict(zip(x_vals, x_pos))
 
-    # 2) Shaded region
+    # Shaded region
     low_arr  = np.array(region_df[low_col].to_list(),  dtype=float)
     high_arr = np.array(region_df[high_col].to_list(), dtype=float)
     grp0     = region_df[group_col].iat[0]
@@ -98,7 +97,7 @@ def plot_region_and_lines(
     ax.plot(x_pos, high_arr, '--',
             color=region_edgecolor, linewidth=region_linewidth)
 
-    # 3) Line + markers
+    # Line and markers
     marker_styles = marker_styles or {}
     color_map     = color_map     or {}
     m_it          = iter(default_markers)
@@ -153,7 +152,7 @@ def plot_region_and_lines(
             tables[str(sheet_name)] = line_tbl
             seen_groups.add(grp)
 
-    # 3b) Optional run-level point overlay (e.g., individual runs)
+    # Optional run-level point overlay (e.g., individual runs).
     if overlay_points_df is not None and not overlay_points_df.empty:
         req_cols = {config_col, overlay_value_col}
         missing_cols = req_cols.difference(overlay_points_df.columns)
@@ -208,7 +207,7 @@ def plot_region_and_lines(
             cols.append(overlay_value_col)
             tables[str(name)] = overlay_df[cols].reset_index(drop=True).copy()
 
-    # 4) Labels, ticks, grid, legend
+    # Labels, ticks, grid, and legend
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel or mid_col)

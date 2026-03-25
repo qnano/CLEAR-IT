@@ -6,7 +6,7 @@ For each image:
 - Derive patient_id and roi_id from filename "Pxx_ROIyy.tiff".
 - Treat the image as (C, H, W); if 2D, treat it as a single-channel image.
 - Compute per-channel and "total" (all channels flattened) metrics:
-  * Legacy trimmed-percentile metrics for p in {0.1, 100}.
+  * Trimmed-percentile metrics for p in {0.1, 100}.
   * Basic intensity statistics (mean, median, std, MAD, mean/median).
   * Clipped statistics using upper clip at the 99.5th percentile.
   * Extreme bright tail statistics using the 99.9th percentile.
@@ -31,7 +31,7 @@ from tqdm import tqdm
 from typing import Optional
 
 
-# ----------------------------- utility functions ----------------------------- #
+# Utility functions
 
 def derive_ids_from_filename(filename: str) -> Dict[str, str]:
     """
@@ -105,14 +105,14 @@ def compute_focus_gradient_energy(channel_2d: np.ndarray) -> float:
 
 def compute_legacy_trimmed_stats(values: np.ndarray, percent: float) -> Dict[str, float]:
     """
-    Compute the legacy trimmed-percentile statistics:
+    Compute trimmed-percentile statistics:
     - lower = percentile(percent)
     - upper = percentile(100 - percent)
     - within_bounds = values between [lower, upper]
     - mean and std of within_bounds.
 
-    This matches the original behavior, even if the naming elsewhere
-    referred to "top p%".
+    This uses the same percentile windowing convention as the ranking
+    metrics, even though related outputs may refer to "top p%".
     """
     if values.size == 0:
         return {
@@ -148,8 +148,8 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
       - extreme bright tail metrics at 99.9th percentile
       - saturation fraction (exact max)
       - histogram entropy
-      - legacy "top p% brightest pixels" metrics for p in {0.1, 100},
-        matching the original new_image_statistics.py implementation.
+      - percentile-based "top p% brightest pixels" metrics for
+        p in {0.1, 100}.
     """
     stats: Dict[str, float] = {}
 
@@ -165,14 +165,14 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
         ]:
             stats[key] = 0.0
 
-        # Legacy top-p metrics
+        # Top-p metrics
         for p in (0.1, 100.0):
             stats[f"top_{p}_percent_mean"] = 0.0
             stats[f"top_{p}_percent_std"] = 0.0
 
         return stats
 
-    # ---------------- basic stats ----------------
+    # Basic stats
     mean_val = float(values.mean())
     median_val = float(np.median(values))
     std_val = float(values.std())
@@ -186,7 +186,7 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
     stats["mad"] = mad_val
     stats["mean_to_median"] = mean_to_median
 
-    # ------------- clipped stats at 99.5% -------------
+    # Clipped stats at 99.5%
     q99_5 = np.percentile(values, 99.5)
     clipped = np.clip(values, 0.0, q99_5)
     mean_clipped = float(clipped.mean())
@@ -198,7 +198,7 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
     stats["std_clipped_99_5"] = std_clipped
     stats["mean_to_median_clipped_99_5"] = mean_to_median_clipped
 
-    # ------------- extreme bright tail at 99.9% -------------
+    # Extreme bright tail at 99.9%
     q99_9 = np.percentile(values, 99.9)
     extreme_mask = values > q99_9
     n_extreme = int(extreme_mask.sum())
@@ -217,28 +217,26 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
     stats["mean_extreme_99_9"] = mean_extreme
     stats["std_extreme_99_9"] = std_extreme
 
-    # ------------- fraction at max (pseudo-saturation) -------------
+    # Fraction at max (pseudo-saturation)
     max_val = float(values.max())
     frac_at_max = float(np.sum(values == max_val)) / float(n_total)
     stats["frac_at_max"] = frac_at_max
 
-    # ------------- entropy -------------
+    # Entropy
     stats["entropy"] = compute_entropy(values)
 
-    # ------------- legacy "top p% brightest pixels" metrics -------------
-    # Match the original code:
+    # Top-p brightest-pixel metrics
+    # Use the percentile-slice convention for these metrics:
     #   sorted_data = np.sort(data)
     #   index = int(np.floor(p / 100.0 * n))
     #   top_percent = sorted_data[-index:]
-    #
-    # and then mean/std on that subset.
     sorted_vals = np.sort(values)
     n = sorted_vals.size
 
     for p in (0.1, 100.0):
         index = int(np.floor(p / 100.0 * n))
         if index <= 0:
-            # original code would give empty slice; we define mean/std as 0.0
+            # Record mean/std as 0.0 when the slice is empty.
             top_vals = np.array([], dtype=sorted_vals.dtype)
         else:
             top_vals = sorted_vals[-index:]
@@ -255,7 +253,7 @@ def compute_channel_stats(values: np.ndarray) -> Dict[str, float]:
 
     return stats
 
-# ----------------------------- core processing ----------------------------- #
+# Core processing
 
 def process_image(image_path: Path) -> Dict[str, float]:
     """
@@ -317,7 +315,7 @@ def collect_tiff_files(input_dir: Path) -> List[Path]:
     return tiffs
 
 
-# ----------------------------- script entrypoint ----------------------------- #
+# Script entry point
 
 def main(input_dir: str, output_dir: str, num_workers: Optional[int] = None) -> None:
     """

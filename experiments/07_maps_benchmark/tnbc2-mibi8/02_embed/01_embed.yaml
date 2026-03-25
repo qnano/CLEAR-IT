@@ -1,0 +1,25 @@
+experiment: 07_benchmark/tnbc2-mibi8/02_embed/01_embed.yaml
+type: embed
+target:
+  key: tnbc2-mibi8
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI44
+  annotation_name: DeepCell_MC17
+  self_slug: tnbc2-mibi8
+batch_size: 256
+num_workers: 0
+lazy_crops: true
+jobs:
+- encoder_id: E2003
+  source_slug: tnbc1-mxif8
+  source_order: 1
+- encoder_id: E2004
+  source_slug: tnbc2-mibi8
+  source_order: 2
+- encoder_id: E2005
+  source_slug: crc-codex26
+  source_order: 3
+- encoder_id: E2006
+  source_slug: tonsil-imc41
+  source_order: 4
+output:
+  embeddings_dir: ${paths.embeddings_dir}

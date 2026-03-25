@@ -1,4 +1,3 @@
-# clearit/io/discover_entries.py
 import os
 import re
 import glob

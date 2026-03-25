@@ -1,0 +1,78 @@
+experiment: 07_benchmark/tnbc2-mibi8/03_benchmark/01_benchmark.yaml
+type: maps_benchmark
+target:
+  key: tnbc2-mibi8
+  dataset_name: TNBC2-MIBI/TNBC2-MIBI44
+  annotation_name: DeepCell_MC17
+  self_slug: tnbc2-mibi8
+  published_name: TNBC2-MIBI44
+split:
+  training_pool:
+    source: public_patient_rankings
+    ranking_subdir: TNBC2-MIBI8
+    column: patient_id
+    exclude_ids:
+    - P30
+    - P31
+    - P32
+    - P33
+    - P34
+    - P35
+    - P36
+    - P37
+    - P38
+    - P39
+    - P40
+    - P41
+  test_ids:
+  - P31
+  - P32
+  - P33
+  - P34
+  - P35
+  - P36
+  - P37
+  - P38
+  - P39
+  - P40
+  - P41
+sampling:
+  seed: 42
+  k_values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  sample_sizes:
+  - label: 4
+  - label: 8
+  - label: 12
+  - label: 19
+  - label: 25
+  - label: 30
+    draw: 29
+training:
+  num_classes: 17
+  max_epochs: 500
+  min_epochs: 50
+  patience: 50
+modalities:
+- name: features
+  data_parts: [features]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+  norm: false
+- name: expressions
+  data_parts: [expressions]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+  norm: true
+- name: features_expressions
+  data_parts: [features, expressions]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+  norm: false
+output:
+  scenario: labelreduction_with_sampling

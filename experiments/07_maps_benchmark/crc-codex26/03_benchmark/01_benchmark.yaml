@@ -1,0 +1,86 @@
+experiment: 07_benchmark/crc-codex26/03_benchmark/01_benchmark.yaml
+type: maps_benchmark
+target:
+  key: crc-codex26
+  dataset_name: CRC-CODEX26
+  annotation_name: DeepCell_MC14
+  self_slug: crc-codex26
+  published_name: CRC-CODEX26
+split:
+  training_pool:
+    source: inline
+    ordered_ids:
+    - P11
+    - P01
+    - P10
+    - P09
+    - P35
+    - P03
+    - P08
+    - P06
+    - P18
+    - P12
+    - P05
+    - P33
+    - P07
+    - P04
+    - P21
+    - P02
+    - P23
+    - P15
+    - P31
+    - P24
+    - P13
+    - P34
+    - P17
+    - P28
+    - P26
+    - P19
+    - P32
+    - P29
+  test_ids:
+  - P22
+  - P27
+  - P30
+  - P25
+  - P14
+  - P16
+  - P20
+sampling:
+  seed: 42
+  k_values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  sample_sizes:
+  - label: 1
+  - label: 2
+  - label: 4
+  - label: 7
+  - label: 12
+  - label: 18
+  - label: 23
+  - label: 28
+training:
+  num_classes: 14
+  max_epochs: 500
+  min_epochs: 100
+  patience: 50
+modalities:
+- name: features
+  data_parts: [features]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+- name: expressions
+  data_parts: [expressions]
+  batch_size: 128
+  predict_batch_size: 1024
+  learning_rate: 0.001
+  dropout: 0.25
+- name: features_expressions
+  data_parts: [features, expressions]
+  batch_size: 1024
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.25
+output:
+  scenario: labelreduction_with_sampling

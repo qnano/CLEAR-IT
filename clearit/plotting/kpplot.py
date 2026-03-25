@@ -57,7 +57,7 @@ def survival_kpplot(classifier_file, **kwargs):
 
     tables = {}
 
-    # --- High classifier group ---
+    # High classifier group
     kmf_high = KaplanMeierFitter()
     label_high = f'classifier high, n={len(T1)}'
     kmf_high.fit(T1 / cf, event_observed=E1, label=label_high)
@@ -81,10 +81,10 @@ def survival_kpplot(classifier_file, **kwargs):
     })
     tables['classifier high'] = high_df
 
-    # --- Log-rank test ---
+    # Log-rank test
     p_value = logrank_test(T1, T2, event_observed_A=E1, event_observed_B=E2).p_value
 
-    # --- Low classifier group ---
+    # Low classifier group
     kmf_low = KaplanMeierFitter()
     label_low = f'classifier low, n={len(T2)}, p = {p_value:.4f}'
     kmf_low.fit(T2 / cf, event_observed=E2, label=label_low)
@@ -108,7 +108,7 @@ def survival_kpplot(classifier_file, **kwargs):
     })
     tables['classifier low'] = low_df
 
-    # --- Summary sheet ---
+    # Summary sheet
     summary = pd.DataFrame([
         {
             'group': 'classifier high',
@@ -127,7 +127,7 @@ def survival_kpplot(classifier_file, **kwargs):
     ])
     tables['summary'] = summary
 
-    # --- Customize the plot ---
+    # Customize the plot
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
     plt.title(title, fontsize=fontsize)

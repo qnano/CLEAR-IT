@@ -1,4 +1,3 @@
-# clearit/models/utils.py
 from pathlib import Path
 from clearit.config import OUTPUTS_DIR
 

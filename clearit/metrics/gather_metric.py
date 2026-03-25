@@ -1,4 +1,3 @@
-# clearit/metrics/gather_metric.py
 import os
 import glob
 import pandas as pd

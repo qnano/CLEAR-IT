@@ -1,4 +1,3 @@
-# clearit/metrics/gather_pr_auc_per_patient.py
 """
 Utilities for gathering per-patient PR-AUC scores from sigmoid prediction CSVs.
 
@@ -9,10 +8,10 @@ columns:
     - target_<class_name>
 
 For each patient, we:
-    1) Compute PR-AUC per class and per ROI.
-    2) Take the median PR-AUC across ROIs for each class.
-    3) Take the mean across classes, yielding a single scalar performance:
-           "mean of medians" (MoM PR-AUC) per patient.
+    - compute PR-AUC per class and per ROI
+    - take the median PR-AUC across ROIs for each class
+    - take the mean across classes, yielding a single scalar performance:
+      "mean of medians" (MoM PR-AUC) per patient
 
 This is intended for use in scatter plots comparing per-patient performance
 with image-quality rankings.
@@ -182,7 +181,7 @@ def _aggregate_image_stats_per_patient(df_images: pd.DataFrame) -> pd.DataFrame:
     return df_patient
 
 
-# Legacy ranking config reused here
+# Ranking configuration reused here
 LEGACY_CHANNEL_CONFIG = [
     (3,   0.1,  True),   # CD3
     (5,   0.1,  True),   # CD8
@@ -195,7 +194,7 @@ LEGACY_CHANNEL_CONFIG = [
 
 def _build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
     """
-    Build a mapping {column_name: ascending_bool} for the legacy ranking.
+    Build a mapping {column_name: ascending_bool} for the ranking score.
     """
     order_dict: Dict[str, bool] = {}
     for channel_idx, percent, ascending in LEGACY_CHANNEL_CONFIG:
@@ -206,15 +205,14 @@ def _build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
 
 def _compute_legacy_ranking(df_patient_stats: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute the legacy aggregated ranking (Total_Score_std and Normalized_Score_std)
-    from per-patient image statistics.
+    Compute the aggregated ranking summary from per-patient image statistics.
     """
     order_dict = _build_legacy_order_dict("std")
 
     missing = [c for c in order_dict if c not in df_patient_stats.columns]
     if missing:
         raise KeyError(
-            "Missing required columns for legacy ranking:\n"
+            "Missing required columns for ranking:\n"
             f"{missing}"
         )
 
@@ -253,7 +251,7 @@ def prepare_scatter_dataframe(
         Path to image_statistics_extended.csv (per-image stats).
     extra_rank_metrics : sequence of str, optional
         Names of additional numeric columns in the per-patient image statistics
-        to convert into normalized ranking columns. For each name 'col', a new
+        to convert into normalized ranking columns. For each name 'col', a
         column 'rank_<col>' is created where higher values correspond to higher
         rank (1.0 = best).
 
@@ -263,16 +261,16 @@ def prepare_scatter_dataframe(
         DataFrame with one row per patient and columns:
             - patient_id
             - MoM                     (performance)
-            - Normalized_Score_std    (legacy normalized rank)
+            - Normalized_Score_std    (normalized rank)
             - rank_<metric>           (for each extra_rank_metrics entry)
     """
     test_dir = Path(test_dir)
     image_stats_csv = Path(image_stats_csv)
 
-    # 1) Per-patient performance
+    # Gather per-patient performance.
     df_perf = gather_patient_pr_auc(test_dir)
 
-    # 2) Per-patient image stats and legacy ranking
+    # Compute per-patient image statistics and the ranking score.
     df_images = pd.read_csv(image_stats_csv)
     df_patient_stats = _aggregate_image_stats_per_patient(df_images)
     df_ranked = _compute_legacy_ranking(df_patient_stats)
@@ -285,7 +283,7 @@ def prepare_scatter_dataframe(
         how="inner",
     )
 
-    # 3) Extra ranking metrics, if requested
+    # Add extra ranking metrics when requested.
     if extra_rank_metrics is not None:
         for col in extra_rank_metrics:
             if col not in df.columns:

@@ -1,4 +1,3 @@
-# clearit/shap/io.py
 from __future__ import annotations
 from pathlib import Path
 from typing import Dict, Any, Tuple
@@ -6,7 +5,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-# --- helpers -----------------------------------------------------------------
+# Helpers
 
 def _to_primitive(obj):
     """Convert common numpy scalars/containers to plain Python types for YAML."""
@@ -24,7 +23,7 @@ def _to_primitive(obj):
         return {str(_to_primitive(k)): _to_primitive(v) for k, v in obj.items()}
     return str(obj)
 
-# --- public API --------------------------------------------------------------
+# Public API
 
 def build_shap_metadata(
     *,
@@ -102,7 +101,7 @@ def save_shap_bundle(
     base_path = Path(base_path)
     base_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # 1) SHAP array
+    # Save the SHAP array.
     arr = np.asarray(shap_values).astype(dtype, copy=False)
     npz_path = base_path.with_suffix(".npz")
     if compressed:
@@ -110,14 +109,14 @@ def save_shap_bundle(
     else:
         np.savez(npz_path, shap=arr)
 
-    # 2) Table (CSV.gz; no parquet dependencies)
+    # Save the aligned sample table.
     cols_keep = [c for c in ("fname", "cell_x", "cell_y", "label", "cell_id") if c in df_filtered.columns]
     extra_cols = [c for c in df_filtered.columns if c not in cols_keep]
     df_to_save = df_filtered[cols_keep + extra_cols].reset_index(drop=True)
     csv_path = base_path.with_suffix(".csv.gz")
     df_to_save.to_csv(csv_path, index=False, compression="gzip")
 
-    # 3) Metadata (YAML; primitives only)
+    # Save YAML metadata with primitive types only.
     yml_path = base_path.with_suffix(".yaml")
     md = _to_primitive(metadata)
     with open(yml_path, "w") as f:

@@ -1,4 +1,3 @@
-# clearit/metrics/gather_scatter_data.py
 """
 Helpers to prepare data for performance-vs-image-quality scatter plots.
 
@@ -6,14 +5,10 @@ We reuse `gather_pr_auc` to compute a single PR-AUC value per test_dir,
 where each test_dir corresponds to a network trained on a single patient.
 
 Typical workflow:
-    1) Build an `entries` list where each entry has:
-           - path   : Path to test_dir with sigmoid/target CSVs
-           - group  : Dataset name (e.g. "TNBC1-MxIF8")
-           - config : Patient ID (e.g. "P01", "P02", ...)
-    2) Call `prepare_scatter_dataframe_single_patient_networks(...)`
-       with that entries list and the path to `image_statistics_extended.csv`.
-    3) Feed the resulting DataFrame into the plotting function in
-       clearit.plotting.scatter.
+- Build an `entries` list where each entry has `path`, `group`, and `config`.
+- Call `prepare_scatter_dataframe_single_patient_networks(...)` with that list
+  and the path to `image_statistics_extended.csv`.
+- Feed the resulting DataFrame into `clearit.plotting.scatter`.
 """
 
 from pathlib import Path
@@ -25,11 +20,9 @@ import pandas as pd
 from .gather_pr_auc import gather_pr_auc
 
 
-# ---------------------------------------------------------------------------
-# Image-quality ranking helpers (legacy ranking)
-# ---------------------------------------------------------------------------
+# Image-quality ranking helpers
 
-# Channels & settings used in the original notebook-based ranking:
+# Channels and settings used for the image-quality ranking.
 # (channel_index, percentile, ascending_flag)
 # ascending=True  -> smaller metric value gets a better rank (rank=1)
 # ascending=False -> larger metric value gets a better rank (rank=1)
@@ -61,7 +54,7 @@ def _aggregate_image_stats_per_patient(df_images: pd.DataFrame) -> pd.DataFrame:
 
 def _build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
     """
-    Build a mapping {column_name: ascending_bool} for the legacy ranking.
+    Build a mapping {column_name: ascending_bool} for the ranking score.
     """
     order_dict: Dict[str, bool] = {}
     for channel_idx, percent, ascending in LEGACY_CHANNEL_CONFIG:
@@ -72,15 +65,14 @@ def _build_legacy_order_dict(statistic_suffix: str = "std") -> Dict[str, bool]:
 
 def _compute_legacy_ranking(df_patient_stats: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute the legacy aggregated ranking (Total_Score_std and
-    Normalized_Score_std) from per-patient image statistics.
+    Compute the aggregated ranking summary from per-patient image statistics.
     """
     order_dict = _build_legacy_order_dict("std")
 
     missing = [c for c in order_dict if c not in df_patient_stats.columns]
     if missing:
         raise KeyError(
-            "Missing required columns for legacy ranking:\n"
+            "Missing required columns for ranking:\n"
             f"{missing}"
         )
 
@@ -102,9 +94,7 @@ def _compute_legacy_ranking(df_patient_stats: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ---------------------------------------------------------------------------
 # Performance gathering for single-patient networks
-# ---------------------------------------------------------------------------
 
 def gather_network_performance_for_scatter(
     entries: Sequence[dict],
@@ -153,9 +143,7 @@ def gather_network_performance_for_scatter(
     return df_perf
 
 
-# ---------------------------------------------------------------------------
-# Main helper: prepare DataFrame for scatter plotting
-# ---------------------------------------------------------------------------
+# Scatter-plot dataframe assembly
 
 def prepare_scatter_dataframe_single_patient_networks(
     entries: Sequence[dict],
@@ -179,7 +167,7 @@ def prepare_scatter_dataframe_single_patient_networks(
         Path to image_statistics_extended.csv (per-image stats).
     extra_rank_metrics : sequence of str, optional
         Names of additional numeric columns in the per-patient image statistics
-        to convert into normalized ranking columns. For each name 'col', a new
+        to convert into normalized ranking columns. For each name 'col', a
         column 'rank_<col>' is created where higher values correspond to higher
         rank (1.0 = best).
 
@@ -190,27 +178,27 @@ def prepare_scatter_dataframe_single_patient_networks(
             - patient_id
             - dataset
             - pr_auc                (overall PR-AUC for that network)
-            - Normalized_Score_std  (legacy image-quality rank)
+            - Normalized_Score_std  (image-quality rank)
             - rank_<metric>         (for each entry in extra_rank_metrics)
     """
     image_stats_csv = Path(image_stats_csv)
 
-    # 1) Gather performance per network (per patient in training set)
+    # Gather performance per network.
     df_perf = gather_network_performance_for_scatter(entries)
 
-    # 2) Aggregate image statistics per patient and compute legacy ranking
+    # Aggregate image statistics per patient and compute the ranking score.
     df_images = pd.read_csv(image_stats_csv)
     df_patient_stats = _aggregate_image_stats_per_patient(df_images)
     df_ranked = _compute_legacy_ranking(df_patient_stats)
 
-    # 3) Merge performance with ranking on patient_id
+    # Merge performance with ranking on patient_id.
     df = df_perf.merge(
         df_ranked,
         on="patient_id",
         how="inner",
     )
 
-    # 4) Extra ranking metrics (optional)
+    # Add extra ranking metrics when requested.
     if extra_rank_metrics is not None:
         for col in extra_rank_metrics:
             if col not in df.columns:
@@ -222,7 +210,7 @@ def prepare_scatter_dataframe_single_patient_networks(
             rank = df[col].rank(method="min", ascending=False)
             df[f"rank_{col}"] = rank / rank.max()
 
-    # Keep the columns we usually care about, plus any extras
+    # Keep the primary output columns first, plus any extras.
     base_cols = ["patient_id", "dataset", "pr_auc", "Normalized_Score_std"]
     extra_cols = [c for c in df.columns if c.startswith("rank_")]
     other_cols = [c for c in df.columns if c not in base_cols + extra_cols]

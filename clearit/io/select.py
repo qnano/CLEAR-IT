@@ -1,4 +1,3 @@
-# clearit/io/select.py
 from typing import List
 import pandas as pd
 

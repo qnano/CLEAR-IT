@@ -1,4 +1,3 @@
-# clearit/io/classification_report.py
 from typing import List
 import pandas as pd
 

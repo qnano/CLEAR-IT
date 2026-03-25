@@ -1,4 +1,3 @@
-# clearit/plotting/shap.py
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
@@ -29,7 +28,7 @@ def plot_shap_heatmaps(
     """
     arr = np.asarray(shap_values)
 
-    # Handle legacy simulated-RGB
+    # Average over the simulated RGB axis when present.
     if arr.ndim == 6:  # (N,C,3,H,W,K)
         arr = arr.mean(axis=2)
     if arr.ndim != 5:
@@ -48,7 +47,7 @@ def plot_shap_heatmaps(
     if channel_strings is None or len(channel_strings) != C:
         channel_strings = [f"Ch {j}" for j in range(C)]
 
-    # ----- Normalization -----
+    # Normalization
     eps = 1e-12
     arr_norm = arr.copy()
 
@@ -81,7 +80,7 @@ def plot_shap_heatmaps(
     # Arrange for plotting: (K, C, H, W)
     vis = np.transpose(arr_norm, (3, 0, 1, 2))
 
-    # ----- Optional overlay (C,K) -----
+    # Optional overlay (C, K)
     overlay = None
     if overlay_matrix is not None:
         if isinstance(overlay_matrix, pd.DataFrame):
@@ -96,7 +95,7 @@ def plot_shap_heatmaps(
         if overlay.shape != (C, K):
             raise ValueError(f"overlay_matrix must have shape (C,K); got {overlay.shape}")
 
-    # ----- Figure layout -----
+    # Figure layout
     fig_h = max(2.0, K * figsize_multiplier)
     fig_w = max(2.0, C * figsize_multiplier) + 0.6
 
@@ -154,7 +153,7 @@ def plot_shap_heatmaps(
                     bbox=dict(facecolor="white", alpha=0.6, edgecolor="none", pad=1.2),
                 )
 
-    # ----- Colorbar -----
+    # Colorbar
     cax = fig.add_subplot(gs[:, -1])
     cbar = fig.colorbar(im, cax=cax)
 

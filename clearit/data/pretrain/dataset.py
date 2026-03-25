@@ -1,4 +1,3 @@
-# clearit/data/pretrain/dataset.py
 import torch
 from torch.utils.data import Dataset
 import tifffile

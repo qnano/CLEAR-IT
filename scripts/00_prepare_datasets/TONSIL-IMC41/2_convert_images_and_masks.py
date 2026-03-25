@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Convert TIFF images and corresponding DeepCell segmentation masks for TONSIL-IMC41, renaming files
-and updating the temporary labels.csv with new filenames.
+and updating the temporary labels.csv with renamed output filenames.
 
 - Reads:
   * `datasets/TONSIL-IMC41/channels.txt` for channel list
@@ -9,9 +9,9 @@ and updating the temporary labels.csv with new filenames.
   * Raw images from `raw_datasets/TONSIL-IMC41/20230804_Tonsil_Matlab_Codes_V4/1_ImageData/*.ome.tiff`
   * Raw masks from `.../5_CP_pipeline/OUTPUTS/CellMasks/CellMasks{ROI:03d}.npy`
 - Writes:
-  * `datasets/TONSIL-IMC41/images/P{pid:02d}_ROI{new:02d}.tiff` with selected channels
-  * `datasets/TONSIL-IMC41/OPTIMAL_MC21/segmentations/P{pid:02d}_ROI{new:02d}.npy`
-  * Updates `temp_labels.csv` with `fname` = new filename
+  * `datasets/TONSIL-IMC41/images/P{pid:02d}_ROI{idx:02d}.tiff` with selected channels
+  * `datasets/TONSIL-IMC41/OPTIMAL_MC21/segmentations/P{pid:02d}_ROI{idx:02d}.npy`
+  * Updates `temp_labels.csv` with `fname` set to the renamed output filename
 
 Filenames are assigned per patient by order in the temp_labels file. The first ROI for a patient → ROI01, second → ROI02, etc.
 
@@ -45,7 +45,7 @@ channels = CHANNELS_FILE.read_text().splitlines()
 df_labels = pd.read_csv(TMP_LABELS)
 df_unique = df_labels[["patient_id","fname_old","ROI"]].drop_duplicates().reset_index(drop=True)
 
-# Assign new filenames per patient
+# Assign output filenames per patient
 new_fname_map = {}
 for pid, group in df_unique.groupby("patient_id"):
     for new_idx, (_, row) in enumerate(group.iterrows(), start=1):

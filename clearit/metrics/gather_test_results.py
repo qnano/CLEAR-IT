@@ -1,4 +1,3 @@
-# clearit/metrics/gather_test_results.py
 
 from pathlib import Path
 from typing import List
@@ -17,7 +16,7 @@ def get_classifier_test_results(
     models_dir: Path = MODELS_DIR,
 ) -> pd.DataFrame:
     """
-    Load a test run's predictions (new per-file CSV format) and compute
+    Load a test run's predictions (stored per-file CSV format) and compute
     per-class TP/TN/FP/FN and confidence scores.
 
     Inputs
@@ -51,7 +50,7 @@ def get_classifier_test_results(
     if not test_dir.exists():
         raise FileNotFoundError(f"Test directory not found: {test_dir}")
 
-    # --- discover which head was used so we can load thresholds ---
+    # Load the head ID so the stored thresholds can be recovered.
     conf_test_path = test_dir / "conf_test.yaml"
     if not conf_test_path.exists():
         raise FileNotFoundError(f"Missing conf_test.yaml in {test_dir}")
@@ -74,11 +73,11 @@ def get_classifier_test_results(
 
     thresholds = head_cfg.get("thresholds")
     if thresholds is None or len(thresholds) != num_classes:
-        # Fallback: 0.5 everywhere if thresholds missing
+        # Use 0.5 for every class if thresholds are missing.
         thresholds = [0.5] * num_classes
     thresholds = np.asarray(thresholds, dtype=np.float32)
 
-    # --- load all per-image CSVs and stack ---
+    # Load and stack per-image CSVs.
     csv_paths = sorted(p for p in test_dir.glob("*.csv") if p.name != "conf_test.yaml")
     if not csv_paths:
         raise FileNotFoundError(f"No prediction CSVs found in {test_dir}")
@@ -86,20 +85,20 @@ def get_classifier_test_results(
     frames = []
     for p in csv_paths:
         df_p = pd.read_csv(p)
-        # ensure required cols exist
+        # Ensure required columns exist.
         req = {"cell_x", "cell_y"} | {f"sigmoid_{i}" for i in range(num_classes)} | {f"target_{i}" for i in range(num_classes)}
         missing = req - set(df_p.columns)
         if missing:
             raise ValueError(f"{p.name} is missing columns: {sorted(missing)}")
         df_p["fname"] = p.stem
-        # make sure coords are ints (avoid merge surprises)
+        # Cast coordinates to ints to avoid merge surprises.
         df_p["cell_x"] = df_p["cell_x"].astype(int)
         df_p["cell_y"] = df_p["cell_y"].astype(int)
         frames.append(df_p)
 
     df_preds = pd.concat(frames, ignore_index=True)
 
-    # --- normalize df_labels merge keys ---
+    # Align merge keys in df_labels.
     for col in ("fname", "cell_x", "cell_y"):
         if col not in df_labels.columns:
             raise KeyError(f"df_labels is missing required column '{col}'")
@@ -107,7 +106,7 @@ def get_classifier_test_results(
     dfL["cell_x"] = dfL["cell_x"].astype(int)
     dfL["cell_y"] = dfL["cell_y"].astype(int)
 
-    # --- merge predictions ↔ labels on exact coords ---
+    # Merge predictions and labels on exact coordinates.
     merged = pd.merge(
         df_preds,
         dfL,
@@ -118,14 +117,14 @@ def get_classifier_test_results(
     if len(merged) == 0:
         raise ValueError("Merge produced 0 rows. Check that df_labels matches test outputs.")
 
-    # --- pull sigmoids & targets into arrays ---
+    # Convert sigmoids and targets to arrays.
     sigmoids = np.column_stack([merged[f"sigmoid_{i}"].to_numpy(dtype=np.float32) for i in range(num_classes)])
     targets  = np.column_stack([merged[f"target_{i}"].to_numpy(dtype=np.int64) for i in range(num_classes)])
 
-    # --- predictions based on thresholds ---
+    # Threshold predictions.
     preds = (sigmoids > thresholds[None, :]).astype(np.int64)
 
-    # --- compute per-class results + confidence columns ---
+    # Compute per-class results and confidence columns.
     out = merged.copy()
     for i, cls in enumerate(class_strings):
         p = preds[:, i]

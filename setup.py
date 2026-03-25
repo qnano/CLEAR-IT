@@ -1,19 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='clearit',
-    version='0.1',
+    name="clearit",
+    version="0.1",
     packages=find_packages(),
     install_requires=[
-        # your dependencies here
-    ],
-)
-
-setup(
-    name='maps',
-    version='0.1',
-    packages=find_packages(),
-    install_requires=[
-        # your dependencies here
+        # Dependencies are managed via requirements.txt.
     ],
 )

@@ -1,4 +1,3 @@
-# clearit/augmentations/utils.py
 from __future__ import annotations
 
 from pathlib import Path
@@ -48,7 +47,7 @@ def get_crop_size_preload(transformdict: Dict[str, Any], img_size: int = 64) -> 
 
     Returns
     -------
-    int : crop size to preload from the original image.
+    int : crop size to preload from the source image.
     """
     # expected keys exist if caller used make_transformdict
     t    = abs(float(transformdict.get("translate", 0)))

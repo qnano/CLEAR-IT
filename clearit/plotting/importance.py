@@ -1,4 +1,3 @@
-# clearit/plotting/importance.py
 from typing import Optional, Sequence, Tuple, Union
 import numpy as np
 import matplotlib.pyplot as plt

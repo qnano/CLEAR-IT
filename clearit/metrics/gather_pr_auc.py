@@ -1,4 +1,3 @@
-# clearit/metrics/gather_pr_auc.py
 """
 Gather overall micro-averaged PR-AUC values from multiple experiment folders,
 ready for boxplot_performance.
@@ -103,7 +102,7 @@ def gather_pr_auc(
         y_true = all_df[true_cols].values
         N = len(all_df)
 
-        # split indices exactly like your old code
+        # Split into contiguous chunks while preserving the input order.
         cuts = np.linspace(0, N, chunks+1, dtype=int)
         splits = [np.arange(cuts[i], cuts[i+1]) for i in range(chunks)]
 

@@ -1,0 +1,74 @@
+experiment: 07_benchmark/tonsil-imc41/03_benchmark/01_benchmark.yaml
+type: maps_benchmark
+target:
+  key: tonsil-imc41
+  dataset_name: TONSIL-IMC41
+  annotation_name: OPTIMAL_MC21
+  self_slug: tonsil-imc41
+  published_name: TONSIL-IMC41
+split:
+  training_pool:
+    source: inline
+    ordered_ids:
+    - P06_ROI04
+    - P07_ROI03
+    - P06_ROI03
+    - P06_ROI02
+    - P05_ROI02
+    - P05_ROI03
+    - P05_ROI04
+    - P07_ROI02
+    - P03_ROI01
+    - P03_ROI03
+    - P07_ROI01
+    - P04_ROI03
+    - P06_ROI01
+    - P04_ROI02
+    - P04_ROI01
+    - P03_ROI02
+    - P05_ROI01
+  test_ids:
+  - P01_ROI01
+  - P01_ROI02
+  - P02_ROI03
+  - P01_ROI03
+  - P02_ROI02
+  - P02_ROI01
+  - P01_ROI04
+sampling:
+  seed: 42
+  k_values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  sample_sizes:
+  - label: 1
+  - label: 2
+  - label: 4
+  - label: 7
+  - label: 11
+  - label: 14
+  - label: 17
+training:
+  num_classes: 21
+  max_epochs: 500
+  min_epochs: 100
+  patience: 100
+modalities:
+- name: features
+  data_parts: [features]
+  batch_size: 128
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.5
+- name: expressions
+  data_parts: [expressions]
+  batch_size: 128
+  predict_batch_size: 1024
+  learning_rate: 0.001
+  dropout: 0.25
+- name: features_expressions
+  data_parts: [features, expressions]
+  batch_size: 128
+  predict_batch_size: 1024
+  learning_rate: 0.0001
+  dropout: 0.5
+output:
+  scenario: labelreduction_with_sampling

@@ -1,4 +1,3 @@
-# clearit/data/pretrain/manager.py
 from torch.utils.data import DataLoader
 
 from .dataset import SingleCellDatasetPretrain, PretrainCropDataset
@@ -6,7 +5,7 @@ from clearit.data.utils import extract_crops
 from clearit.augmentations.utils import get_crop_size_preload
 
 class PretrainDataManager:
-    # Holds any DataLoader we've built, keyed by (cache_key, mode, crop_size)
+    # Cache DataLoader objects keyed by (cache_key, mode, crop_size).
     dataset_cache = {}
 
     @staticmethod
@@ -25,33 +24,33 @@ class PretrainDataManager:
         The result is cached (per unique cache_key + mode + crop_size)
         so repeated calls don’t reload or re‐pad.
         """
-        # pull core params
+        # Read the core loader parameters.
         batch_size = config['batch_size']
         img_size   = config['img_size']
         transforms = config['transforms']
         lazy_mode  = bool(config.get('lazy_crops', False))
 
-        # build a unique cache key for this exact dataset + mode
+        # Build a cache key for this dataset, mode, and effective crop size.
         user_key = config.get('cache_key', dataset_name)
         mode_flag = 'lazy' if lazy_mode else 'eager'
-        # for eager: we’ll compute an expanded crop_size; for lazy we use img_size
+        # Eager mode uses an expanded crop size; lazy mode uses img_size directly.
         crop_size = img_size if lazy_mode else get_crop_size_preload(transforms, img_size)
         cache_name = f"{user_key}|{mode_flag}|{crop_size}"
 
-        # hit? return immediately
+        # Return cached loaders immediately when available.
         if cache_name in PretrainDataManager.dataset_cache:
             if verbose:
                 print(f"[cache hit] {cache_name}")
             return PretrainDataManager.dataset_cache[cache_name]
 
-        # miss → build it
+        # Cache miss: build the loader.
         if verbose:
             print(f"[cache miss] building DataLoader for {cache_name}")
 
-        # 1) Lazy: on‐the‐fly cropping
+        # Lazy mode crops on the fly from the source images.
         if lazy_mode:
             if verbose:
-                print(f"  → using lazy PretrainCropDataset (on‐the‐fly)")
+                print(f"  -> using lazy PretrainCropDataset (on-the-fly)")
 
             ds = PretrainCropDataset(
                 df_samples=df_samples,
@@ -68,10 +67,10 @@ class PretrainDataManager:
                 persistent_workers=(num_workers > 0)
             )
 
-        # 2) Eager: pre‐extract everything up front
+        # Eager mode pre-extracts all crops before constructing the dataset.
         else:
             if verbose:
-                print(f"  → pre‐extracting all crops (crop_size={crop_size})")
+                print(f"  -> pre-extracting all crops (crop_size={crop_size})")
 
             crop_df, crops_tensor = extract_crops(
                 df_samples,
@@ -79,7 +78,7 @@ class PretrainDataManager:
                 crop_size=crop_size,
                 max_workers=num_workers
             )
-            # merge to get the crop_tensor_index column
+            # Merge in the crop_tensor_index column expected by the dataset.
             df_updated = df_samples.merge(
                 crop_df,
                 how='left',
@@ -100,6 +99,6 @@ class PretrainDataManager:
                 persistent_workers=(num_workers > 0)
             )
 
-        # cache & return
+        # Cache the constructed loader and return it.
         PretrainDataManager.dataset_cache[cache_name] = loader
         return loader

@@ -1,4 +1,3 @@
-# clearit/models/encoder.py
 from abc import ABC, abstractmethod
 import torch.nn as nn
 

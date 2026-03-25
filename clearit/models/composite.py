@@ -1,4 +1,3 @@
-# clearit/models/composite.py
 import torch
 import torch.nn as nn
 
@@ -30,20 +29,20 @@ class EncoderClassifier(nn.Module):
         """
         B, C, H, W = x.shape
 
-        # 1) unroll channels into batch
+        # Treat each channel as its own 1-channel image.
         x = x.view(B * C, 1, H, W)
 
-        # 2) fake-RGB triplication so the ResNet’s conv1 (3-in) will accept it
+        # Replicate to RGB so the encoder input layer accepts the tensor.
         x = x.repeat(1, 3, 1, 1)               # now [B*C, 3, H, W]
 
-        # 3) run through encoder
+        # Encode each channel view.
         feats = self.encoder(x)                # [B*C, F]
 
-        # 4) reshape back to (B, C, F)
+        # Restore batch and channel dimensions.
         feats = feats.view(B, C, -1)
 
-        # 5) concatenate along feature dimension -> (B, C*F)
+        # Concatenate channel embeddings.
         feats = feats.reshape(B, -1)
 
-        # 6) classification head
+        # Run the classification head.
         return self.classification_head(feats)

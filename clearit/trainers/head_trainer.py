@@ -1,4 +1,3 @@
-# clearit/trainers/head_trainer.py
 import yaml
 import torch
 import torch.nn as nn
@@ -27,29 +26,29 @@ class HeadTrainer:
         self.head_dir    = self.encoder_dir / head_dir
         self.head_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1) load encoder config so we know proj_layers, mlp_layers, etc.
+        # Load the encoder config so projection settings stay aligned.
         enc_cfg = yaml.safe_load((self.encoder_dir / "conf_enc.yaml").read_text())
         self.encoder_config = enc_cfg
 
-        # 2) load our complete defaults (including id, base_encoder, …)
+        # Load the default head configuration.
         defaults_path = Path(__file__).parent.parent / "configs" / "headtrainer_defaults.yaml"
         defaults      = yaml.safe_load(defaults_path.read_text())
 
-        # 3) if there’s already a saved head-config, layer it on top
+        # Layer any saved head config on top of the defaults.
         user_cfg = {}
         existing = self.head_dir / "conf_head.yaml"
         if existing.exists():
             user_cfg = yaml.safe_load(existing.read_text())
 
-        # 4) merge defaults ← user_cfg ← overrides  
+        # Merge defaults, saved config, and call-time overrides.  
         cfg = { **defaults, **user_cfg }
         if overrides:
-            # special-case: if pos_weight explicitly None, make it all-ones
+            # Interpret pos_weight=None as an all-ones vector.
             if overrides.get("pos_weight") is None:
                 overrides["pos_weight"] = [1.0] * cfg["num_classes"]
             cfg.update(overrides)
 
-        # 5) fill in any last-moment required defaults
+        # Fill in runtime-dependent defaults.
         cfg.setdefault("init_time", int(time()))
         cfg.setdefault("status", 0)
 
@@ -59,14 +58,14 @@ class HeadTrainer:
         self.best_thresh = None
 
     def save_config(self):
-        """Write out conf_head.yaml with our updated self.config."""
+        """Write conf_head.yaml with the current trainer configuration."""
         path = self.head_dir / "conf_head.yaml"
         with open(path, 'w') as f:
             yaml.dump(self.config, f, default_flow_style=False, sort_keys=False)
         print(f"Saved config to {path}")
 
     def save_model(self):
-        """Save head and, if unfrozen, encoder weights."""
+        """Save head weights and encoder weights when the encoder is unfrozen."""
         if not self.config['freeze_encoder']:
             torch.save(self.model.encoder.state_dict(), self.head_dir / "enc.pt")
         torch.save(self.model.classification_head.state_dict(), self.head_dir / "head.pt")
@@ -145,13 +144,13 @@ class HeadTrainer:
         best_val = float('inf')
         best_epoch = self.config.get('best_epoch', 0)
 
-        # prepare logging
+        # Prepare logging.
         self.model.train()
         pbar = tqdm(total=self.config['epochs'], desc="Training Heads")
         start = time()
 
         for epoch in range(self.config['epochs_trained'], self.config['epochs']):
-            # --- train ---
+            # Training step
             total_loss = 0.0
             for x,y,_,_ in dataloader_train:
                 x,y = x.to(self.device), y.to(self.device)
@@ -162,7 +161,7 @@ class HeadTrainer:
                 self.optimizer.step()
                 total_loss += loss.item() * x.size(0)
 
-            # --- validate ---
+            # Validation step
             self.model.eval()
             val_loss = 0.0
             outs, tars = [], []
@@ -176,18 +175,18 @@ class HeadTrainer:
             self.model.train()
 
             val_loss /= len(dataloader_val.dataset)
-            # check for improvement
+            # Check for improvement.
             if val_loss < best_val:
                 best_val    = val_loss
                 best_epoch  = epoch + 1
-                # compute thresholds on this validation set
+                # Compute thresholds on this validation set.
                 all_out = torch.cat(outs, dim=0)
                 all_tar = torch.cat(tars, dim=0)
                 self.best_thresh = self._compute_thresholds(all_out, all_tar)
 
-                # save checkpoint
+                # Save the checkpoint.
                 self.save_model()
-                # record in config
+                # Record the result in the config.
                 self.config['best_epoch']  = best_epoch
                 self.config['thresholds']  = self.best_thresh
 

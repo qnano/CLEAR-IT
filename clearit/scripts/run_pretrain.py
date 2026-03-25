@@ -1,4 +1,3 @@
-# clearit/scripts/run_pretrain.py
 """
 Wrapper to run SimCLR pre-training from a YAML recipe.
 
@@ -90,7 +89,7 @@ def run_pretrain(recipe_path: Path, lazy_crops: bool = False):
             print(f"  → encoder {eid} status={pt.config['status']} → skipping")
             continue
 
-        # save our freshly‐injected defaults
+        # Persist the merged pretraining configuration.
         pt.save_config()
 
         pt.initialize_model(device=device)

@@ -1,4 +1,3 @@
-# clearit/augmentations/factory.py
 from __future__ import annotations
 
 import math
@@ -87,7 +86,7 @@ def get_augmentations(transformdict: dict = None, img_size: int = 64):
     crop_needed = False
     crop_size = img_size
 
-    # 1) Gaussian blur
+    # Gaussian blur
     if tdict.get("gaussian_blur", 0) != 0:
         k = int(tdict["gaussian_blur"]) * 2 + 1
         augs.append(
@@ -101,7 +100,7 @@ def get_augmentations(transformdict: dict = None, img_size: int = 64):
             )
         )
 
-    # 2) Color jitter
+    # Color jitter
     if any(float(tdict.get(k, 0)) != 0 for k in ("brightness", "contrast", "saturation", "hue")):
         augs.append(
             ColorJitterSimple(
@@ -114,7 +113,7 @@ def get_augmentations(transformdict: dict = None, img_size: int = 64):
             )
         )
 
-    # 3) Translate (radial)
+    # Radial translation
     if float(tdict.get("translate", 0)) != 0:
         augs.append(
             RandomRadialTranslate(
@@ -126,11 +125,11 @@ def get_augmentations(transformdict: dict = None, img_size: int = 64):
         )
         crop_needed = True
 
-    # 4) Zoom via RandomAffine scale range
+    # Zoom via RandomAffine scale range
     zmin = float(tdict.get("zoomfactor_min", 1.0))
     zmax = float(tdict.get("zoomfactor_max", 1.0))
     if (zmin != 1.0) or (zmax != 1.0):
-        # Convert zoom factors to scale range (affine expects scale<1 for zoom-in)
+        # Convert zoom factors to the affine scale range.
         smin = 1 / math.sqrt(max(zmax, 1e-12))  # zoom-out factor -> smaller scale
         smax = 1 / math.sqrt(max(zmin, 1e-12))
         augs.append(
@@ -143,20 +142,20 @@ def get_augmentations(transformdict: dict = None, img_size: int = 64):
         )
         crop_needed = True
 
-    # 5) If translate/zoom applied, center-crop back to final size
+    # Center-crop back to the requested size after translation or zoom.
     if crop_needed:
         augs.append(kornia.augmentation._2d.geometric.CenterCrop(crop_size))
 
-    # 6) Right-angle rotations with uniform {0,90,180,270}
+    # Right-angle rotations.
     if transformdict['rotate'] != 0:
         augs.append(
             RandomRightAngleRotation(
-                p=1.0,              # always sample a k in {0,1,2,3}
+                p=1.0,
                 same_on_batch=False
             )
         )
 
-    # 7) Flips after rotations (each with 0.5 prob)
+    # Flips after rotations.
     if transformdict['flip'] != 0:
         augs.append(
             kornia.augmentation._2d.geometric.RandomHorizontalFlip(

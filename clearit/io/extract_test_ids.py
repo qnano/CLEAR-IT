@@ -1,4 +1,3 @@
-# clearit/io/extract_test_ids.py
 from typing import List, Dict, Any
 import yaml
 import re

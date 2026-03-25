@@ -1,4 +1,3 @@
-# clearit/metrics/gather_mean_of_medians.py
 import os
 import glob
 import numpy as np
@@ -129,7 +128,7 @@ def gather_region_fast(
           .reset_index()
     )
 
-    # Preserve original configuration order
+    # Preserve configuration order from the input entries.
     configs = list(dict.fromkeys(e['config'] for e in entries))
     summary['Configuration'] = pd.Categorical(
         summary['Configuration'], categories=configs, ordered=True
@@ -181,7 +180,7 @@ def gather_points_fast(
           .reset_index()
     )
 
-    # preserve the original config ordering
+    # Preserve configuration order from the input entries.
     configs = list(dict.fromkeys(e['config'] for e in entries))
     summary['Configuration'] = pd.Categorical(
         summary['Configuration'], categories=configs, ordered=True

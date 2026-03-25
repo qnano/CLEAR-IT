@@ -1,4 +1,3 @@
-# clearit/objectives/objective.py
 import torch
 
 def compute_loss(lossfunc_name, sim_matrix, labels_matrix, batch_size, tau):
